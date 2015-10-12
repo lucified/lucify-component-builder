@@ -1,0 +1,39 @@
+{
+  "name": "lucify-embed",
+  "version": "0.1.0",
+  "description": "Makes React components easily emdeddable into any website with iframe",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lucify",
+  "license": "ISC",
+  "dependencies": {
+    "babelify": "^6.3.0",
+    "browser-sync": "^2.9.7",
+    "browserify": "^11.2.0",
+    "combined-stream": "^1.0.5",
+    "fbjs": "^0.2.1",
+    "gulp-if": "^2.0.0",
+    "gulp-load-plugins": "^0.10.0",
+    "gulp-notify": "^2.2.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-rev": "^6.0.1",
+    "gulp-uglify": "^1.4.1",
+    "handlebars": "^4.0.3",
+    "minimist": "^1.2.0",
+    "mkpath": "^0.1.0",
+    "query-string": "^2.4.1",
+    "through": "^2.3.8",
+    "through2": "^2.0.0",
+    "uglify": "^0.1.5",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.4.0"
+  },
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
+  }
+}
