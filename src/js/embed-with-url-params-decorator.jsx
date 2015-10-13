@@ -34,10 +34,6 @@ module.exports = function(Component) {
 
     getUrlParams: function() {
       return decode(queryString.parse(location.search));
-
-      //var urlInfo = url.parse(location.href, true);
-      //return typedQs.decode(urlInfo.query);
-      //return queryString.parse(location.search);
     },
 
     render: function() {

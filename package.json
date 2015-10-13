@@ -9,6 +9,7 @@
   "author": "Lucify",
   "license": "ISC",
   "dependencies": {
+    "lucify-build-tools": "git+ssh://git@gitlab.com/lucify/lucify-build-tools.git",
     "babelify": "^6.3.0",
     "browser-sync": "^2.9.7",
     "browserify": "^11.2.0",

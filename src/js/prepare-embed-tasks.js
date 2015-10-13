@@ -49,7 +49,7 @@ function htmlForEmbed() {
     }))
     //.pipe($.minifyHtml())
     .pipe($.rename('index.html'))
-    .pipe(dest(context.destPath))
+    .pipe(dest(context.destPath));
 }
 
 
@@ -84,15 +84,47 @@ function setWatch(cb) {
 }
 
 
-var prepareEmbedTasks = function(gulp) {
-	gulp.task('set-watch', setWatch);
+function prepareSkeleton(cb) {
+    mkpath.sync(j('temp', 'data-assets'));
+    mkpath.sync(j('temp', 'generated-images'));
+    mkpath.sync('build');
+    cb();
+}
+
+
+
+var prepareEmbedTasks = function(gulp, opts) {
+	
+  if (!opts) {
+      opts = {};
+  }
+
+  gulp.task('watch', function(cb) {
+      gulp.watch('./**/*.scss', gulp.series('styles'));
+      cb();
+  });
+
+  
+  gulp.task('prepare-skeleton', prepareSkeleton);
+  gulp.task('set-watch', setWatch);
 	gulp.task('html-for-embed', htmlForEmbed);
+  gulp.task('images', buildTools.images.bind(null, context, opts.paths));
+  gulp.task('data', buildTools.data.bind(null, context, opts.paths));
 	gulp.task('styles', buildTools.styles.bind(null, context));
 	gulp.task('bundle-embed', bundleEmbed);
 	gulp.task('generate-jsx', generateJSX);
-	gulp.task('build', gulp.series('html-for-embed', 'styles', 'generate-jsx', 'bundle-embed'));
-	gulp.task('serve', buildTools.serve);
-	gulp.task('default', gulp.series('set-watch', 'build', 'serve'));
+
+  var buildTaskNames = ['html-for-embed', 'images', 'data', 'styles', 'generate-jsx', 'bundle-embed'];
+  if (opts.pretasks) {
+    buildTaskNames = opts.pretasks.concat(buildTaskNames);
+  }
+  buildTaskNames = ['prepare-skeleton'].concat(buildTaskNames);
+
+	gulp.task('build', gulp.series(buildTaskNames));
+  gulp.task('serve', buildTools.serve);
+	gulp.task('serve-prod', buildTools.serveProd);
+  
+  gulp.task('default', gulp.series('set-watch', 'build', 'watch', 'serve'));
 }
 
 
