@@ -19,10 +19,11 @@ var packagePath = j('node_modules', 'lucify-embed');
 
 var options = parseArgs(process.argv, {default: {
 	optimize: false, 
-	uglify: false}});
+	uglify: false,
+  dev: true}});
 
 var context = new buildTools.BuildContext(
-    false, options.optimize, options.uglify);
+    options.dev, options.optimize, options.uglify);
 
 
 /*
