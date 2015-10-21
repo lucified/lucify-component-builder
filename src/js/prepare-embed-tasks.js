@@ -6,32 +6,29 @@ var $ = require('gulp-load-plugins')();
 var browserSync = require('browser-sync');
 var fs = require('fs');
 var mkpath = require('mkpath');
-
+var del = require('del');
+var parseArgs = require('minimist');
 var buildTools = require('lucify-build-tools');
 
 var src  = gulp.src;
 var dest = gulp.dest;
 var j = path.join;
 
-var parseArgs = require('minimist');
-
 var packagePath = j('node_modules', 'lucify-embed');
 
 
 var options = parseArgs(process.argv, {default: {
 	optimize: false, 
-	uglify: false,
-	dev: true}});
+	uglify: false}});
 
 var context = new buildTools.BuildContext(
-	options.dev, options.optimize, options.uglify);
+    false, options.optimize, options.uglify);
 
 
 /*
  * Generate HTML for the embed
  */
 function htmlForEmbed() {
-
   return src(j(packagePath, 'src', 'www', 'embed.hbs'))
     .pipe(through2.obj(function(file, enc, _cb) {
       
@@ -92,39 +89,67 @@ function prepareSkeleton(cb) {
 }
 
 
+function setupDistBuild() {
+  context.dev = false;
+  context.destPath = j('dist', context.assetPath);
+  return del('dist/*');
+}
+
 
 var prepareEmbedTasks = function(gulp, opts) {
-	
   if (!opts) {
       opts = {};
   }
+
+  context.assetPath = !opts.assetContext ? "" : opts.assetContext;
 
   gulp.task('watch', function(cb) {
       gulp.watch('./**/*.scss', gulp.series('styles'));
       cb();
   });
 
-  
   gulp.task('prepare-skeleton', prepareSkeleton);
   gulp.task('set-watch', setWatch);
-	gulp.task('html-for-embed', htmlForEmbed);
-  gulp.task('images', buildTools.images.bind(null, context, opts.paths));
+	gulp.task('images', buildTools.images.bind(null, context, opts.paths));
   gulp.task('data', buildTools.data.bind(null, context, opts.paths));
-	gulp.task('styles', buildTools.styles.bind(null, context));
+  gulp.task('styles', buildTools.styles.bind(null, context));
+  gulp.task('manifest', buildTools.manifest.bind(null, context));
+  gulp.task('html-for-embed', htmlForEmbed);
 	gulp.task('bundle-embed', bundleEmbed);
 	gulp.task('generate-jsx', generateJSX);
+  gulp.task('serve', buildTools.serve);
+  gulp.task('serve-prod', buildTools.serveProd);
+  gulp.task('setup-dist-build', setupDistBuild);
+  gulp.task('s3-hashed', buildTools.s3.publishHashedAssets
+    .bind(null, opts.defaultBucket, opts.publishFromFolder, opts.publishToFolder, opts.maxAge));
+  gulp.task('s3-entry-points', buildTools.s3.publishEntryPoints
+    .bind(null, opts.defaultBucket, opts.publishFromFolder, opts.publishToFolder));
 
-  var buildTaskNames = ['html-for-embed', 'images', 'data', 'styles', 'generate-jsx', 'bundle-embed'];
+  var buildTaskNames = [
+    'images', 
+    'data', 
+    'styles', 
+    'generate-jsx',
+    'bundle-embed',
+    'manifest', 
+    'html-for-embed'];
+
   if (opts.pretasks) {
     buildTaskNames = opts.pretasks.concat(buildTaskNames);
   }
   buildTaskNames = ['prepare-skeleton'].concat(buildTaskNames);
 
-	gulp.task('build', gulp.series(buildTaskNames));
-  gulp.task('serve', buildTools.serve);
-	gulp.task('serve-prod', buildTools.serveProd);
-  
-  gulp.task('default', gulp.series('set-watch', 'build', 'watch', 'serve'));
+  gulp.task('build', gulp.series(buildTaskNames));
+  gulp.task('dist', gulp.series('setup-dist-build', 'build'));
+
+  gulp.task('default', gulp.series(
+    'set-watch', 'build', 'watch', 'serve'));
+
+  // It is important to do deploy in series to 
+  // achieve an "atomic" update. uploading index.html
+  // before hashed assets would be bad -- JOJ
+  gulp.task('s3-deploy', gulp.series(
+    's3-hashed', 's3-entry-points', buildTools.s3.writeCache));
 }
 
 
