@@ -8,7 +8,9 @@ var fs = require('fs');
 var mkpath = require('mkpath');
 var del = require('del');
 var parseArgs = require('minimist');
+
 var buildTools = require('lucify-build-tools');
+var embedCode = require('lucify-commons/src/js/embed-code.js');
 
 var src  = gulp.src;
 var dest = gulp.dest;
@@ -67,12 +69,49 @@ function generateJSX(cb) {
 
 
 function bundleEmbed() {
-	var bundleConfig = {
-		entries: 'temp/embed.jsx',
-		dest: 'build',
-		newOutputName: 'index.js',
-	};
 	return buildTools.bundle('temp/embed.jsx', context);
+}
+
+
+function bundleEmbedBootstrap() {
+  return buildTools.bundle(j(packagePath, 'src', 'js', 'embed.jsx'), 
+    context, {rev: false, outputFileName: 'embed.js'});
+}
+
+function bundleResize() {
+  return buildTools.bundle(j(packagePath, 'src', 'js', 'resize.jsx'), 
+    context, {rev: false, outputFileName: 'resize.js'});
+}
+
+
+function embedCodes(context, baseUrl, cb) {
+
+  // if baseUrl is not defined, this is not 
+  // intended to be embeddable, and there is
+  // no need to generate embed codes
+  if (!baseUrl) {
+    cb();
+    return;
+  }
+
+  // for dev builds baseUrl is always localhost
+  if (context.dev) {
+    baseUrl = "http://localhost:3000/";
+  }
+
+  return src(j(packagePath, 'src', 'embed-codes.txt'))
+    .pipe(through2.obj(function(file, enc, _cb) {      
+      var params = {
+        scriptTagEmbedCode: embedCode.getScriptTagEmbedCode(baseUrl),
+        iFrameWithRemoteResizeEmbedCode: embedCode.getIFrameEmbedCodeWithRemoteResize(baseUrl),
+        iFrameWithInlineResizeEmbedCode: embedCode.getIFrameEmbedCodeWithInlineResize(baseUrl),
+      };
+      file.contents = new Buffer(
+      context.hbs.renderSync(file.contents.toString(), params)) 
+      this.push(file);
+      _cb();
+    }))
+    .pipe(dest(context.destPath));
 }
 
 
@@ -117,6 +156,9 @@ var prepareEmbedTasks = function(gulp, opts) {
   gulp.task('manifest', buildTools.manifest.bind(null, context));
   gulp.task('html-for-embed', htmlForEmbed);
 	gulp.task('bundle-embed', bundleEmbed);
+  gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
+  gulp.task('bundle-resize', bundleResize);
+  gulp.task('embed-codes', embedCodes.bind(null, context, opts.embedBaseUrl));
 	gulp.task('generate-jsx', generateJSX);
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
@@ -132,7 +174,10 @@ var prepareEmbedTasks = function(gulp, opts) {
     'styles', 
     'generate-jsx',
     'bundle-embed',
+    'bundle-embed-bootstrap',
+    'bundle-resize',
     'manifest', 
+    'embed-codes',
     'html-for-embed'];
 
   if (opts.pretasks) {

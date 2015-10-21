@@ -1,0 +1,30 @@
+
+# Embed codes
+
+## Recommended (Script-tag version)
+
+```
+-- embed code starts --
+{{{scriptTagEmbedCode}}}
+-- embed code ends --
+```
+
+## IFrame with remote auto-resize script
+
+```
+-- embed code starts --
+{{{iFrameWithRemoteResizeEmbedCode}}}
+-- embed code ends --
+```
+
+## IFrame with inline auto-resize script
+
+```
+-- embed code starts --
+{{{iFrameWithInlineResizeEmbedCode}}}
+-- embed code ends --
+```
+
+
+Resizing is based on `iframe-resizer` from:
+<https://github.com/davidjbradshaw/iframe-resizer>
