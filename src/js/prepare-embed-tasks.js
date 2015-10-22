@@ -99,7 +99,7 @@ function embedCodes(context, baseUrl, cb) {
     baseUrl = "http://localhost:3000/";
   }
 
-  return src(j(packagePath, 'src', 'embed-codes.txt'))
+  return src(j(packagePath, 'src', 'www', 'embed-codes.hbs'))
     .pipe(through2.obj(function(file, enc, _cb) {      
       var params = {
         scriptTagEmbedCode: embedCode.getScriptTagEmbedCode(baseUrl),
@@ -111,6 +111,7 @@ function embedCodes(context, baseUrl, cb) {
       this.push(file);
       _cb();
     }))
+    .pipe($.rename('embed-codes.html'))
     .pipe(dest(context.destPath));
 }
 
