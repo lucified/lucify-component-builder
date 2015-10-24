@@ -17,7 +17,7 @@ var src  = gulp.src;
 var dest = gulp.dest;
 var j = path.join;
 
-var packagePath = j('node_modules', 'lucify-embed');
+var packagePath = j('node_modules', 'lucify-component-builder');
 
 
 var options = parseArgs(process.argv, {default: {
