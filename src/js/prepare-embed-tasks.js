@@ -8,6 +8,7 @@ var fs = require('fs');
 var mkpath = require('mkpath');
 var del = require('del');
 var parseArgs = require('minimist');
+var deepcopy = require('deepcopy');
 
 var buildTools = require('lucify-build-tools');
 var embedCode = require('lucify-commons/src/js/embed-code.js');
@@ -28,22 +29,34 @@ var context = new buildTools.BuildContext(
     options.dev, options.optimize, options.uglify);
 
 
-/*
- * Generate HTML for the embed
- */
-function htmlForEmbed() {
+
+function html(context, pageDef, baseUrl, assetContext) {
+  
+  function setImageUrl(def, imageType) {
+     if (def[imageType]) {
+       var key = def[imageType];  
+       var filename = (context.assetManifest[key] != null) ? context.assetManifest[key] : key;
+       def[imageType] = baseUrl + "images/" + filename;  
+    }
+  }
+
   return src(j(packagePath, 'src', 'www', 'embed.hbs'))
     .pipe(through2.obj(function(file, enc, _cb) {
       
-      var asset = 'index.js';
-      var params = {asset: asset};
+      var def;
+      if (pageDef != null) {
+        def = deepcopy(pageDef);
+        def.url = baseUrl + assetContext;
+        setImageUrl(def, 'twitterImage');
+        setImageUrl(def, 'openGraphImage');
+        setImageUrl(def, 'schemaImage');
+      } else {
+        def = {title: "Lucify component"};
+      }
       
-      // replace asset paths with revisioned data
       file.contents = new Buffer(
-        context.hbs.renderSync(file.contents.toString(), params)) 
-      file.path = file.path.replace(/\.hbs$/,'.html')
-
-      // push to the outer stream
+        context.hbs.renderSync(file.contents.toString(), def)); 
+      //file.path = file.path.replace(/\.hbs$/,'.html')
       this.push(file);
       _cb();
     }))
@@ -51,6 +64,31 @@ function htmlForEmbed() {
     .pipe($.rename('index.html'))
     .pipe(dest(context.destPath));
 }
+
+
+// /*
+//  * Generate HTML for the embed
+//  */
+// function htmlForEmbed() {
+//   return src(j(packagePath, 'src', 'www', 'embed.hbs'))
+//     .pipe(through2.obj(function(file, enc, _cb) {
+      
+//       var asset = 'index.js';
+//       var params = {asset: asset};
+      
+//       // replace asset paths with revisioned data
+//       file.contents = new Buffer(
+//         context.hbs.renderSync(file.contents.toString(), params)) 
+//       file.path = file.path.replace(/\.hbs$/,'.html')
+
+//       // push to the outer stream
+//       this.push(file);
+//       _cb();
+//     }))
+//     //.pipe($.minifyHtml())
+//     .pipe($.rename('index.html'))
+//     .pipe(dest(context.destPath));
+// }
 
 
 /*
@@ -84,7 +122,7 @@ function bundleResize() {
 }
 
 
-function embedCodes(context, baseUrl, cb) {
+function embedCodes(context, baseUrl, assetContext, cb) {
 
   // if baseUrl is not defined, this is not 
   // intended to be embeddable, and there is
@@ -95,16 +133,14 @@ function embedCodes(context, baseUrl, cb) {
   }
 
   // for dev builds baseUrl is always localhost
-  if (context.dev) {
-    baseUrl = "http://localhost:3000/";
-  }
+  var url = context.dev ? "http://localhost:3000/" : baseUrl + assetContext;
 
   return src(j(packagePath, 'src', 'www', 'embed-codes.hbs'))
     .pipe(through2.obj(function(file, enc, _cb) {      
       var params = {
-        scriptTagEmbedCode: embedCode.getScriptTagEmbedCode(baseUrl),
-        iFrameWithRemoteResizeEmbedCode: embedCode.getIFrameEmbedCodeWithRemoteResize(baseUrl),
-        iFrameWithInlineResizeEmbedCode: embedCode.getIFrameEmbedCodeWithInlineResize(baseUrl),
+        scriptTagEmbedCode: embedCode.getScriptTagEmbedCode(url),
+        iFrameWithRemoteResizeEmbedCode: embedCode.getIFrameEmbedCodeWithRemoteResize(url),
+        iFrameWithInlineResizeEmbedCode: embedCode.getIFrameEmbedCodeWithInlineResize(url),
       };
       file.contents = new Buffer(
       context.hbs.renderSync(file.contents.toString(), params)) 
@@ -155,11 +191,11 @@ var prepareEmbedTasks = function(gulp, opts) {
   gulp.task('data', buildTools.data.bind(null, context, opts.paths));
   gulp.task('styles', buildTools.styles.bind(null, context));
   gulp.task('manifest', buildTools.manifest.bind(null, context));
-  gulp.task('html-for-embed', htmlForEmbed);
+  gulp.task('html', html.bind(null, context, opts.pageDef, opts.baseUrl, opts.assetContext));
 	gulp.task('bundle-embed', bundleEmbed);
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);
-  gulp.task('embed-codes', embedCodes.bind(null, context, opts.embedBaseUrl));
+  gulp.task('embed-codes', embedCodes.bind(null, context, opts.baseUrl, opts.assetContext));
 	gulp.task('generate-jsx', generateJSX);
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
@@ -179,7 +215,7 @@ var prepareEmbedTasks = function(gulp, opts) {
     'bundle-resize',
     'manifest', 
     'embed-codes',
-    'html-for-embed'];
+    'html'];
 
   if (opts.pretasks) {
     buildTaskNames = opts.pretasks.concat(buildTaskNames);
