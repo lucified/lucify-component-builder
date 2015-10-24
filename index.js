@@ -1,2 +1,2 @@
 
-module.exports = require('./src/js/prepare-embed-tasks.js');
+module.exports = require('./src/js/prepare-build-tasks.js');

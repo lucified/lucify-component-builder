@@ -5,12 +5,9 @@ var React = require('react');
 //var injectTapEventPlugin = require("react-tap-event-plugin");
 var EmbedWithUrlParamsDecorator = require('./embed-with-url-params-decorator.jsx');
 
-
 module.exports = function(Component) {
   //injectTapEventPlugin();
-  var EmbedComponent = EmbedWithUrlParamsDecorator(Component);
+  var Comp = EmbedWithUrlParamsDecorator(Component);
   window.React = React;
-  React.render(<EmbedComponent />, document.getElementById('content'));
+  React.render(<Comp />, document.getElementById('content'));
 }
-
-

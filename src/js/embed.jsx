@@ -1,4 +1,9 @@
 
+//
+// TODO
+//
+// Clean up this ugly implementation
+// 
 
 function guid() {
   function s4() {
@@ -33,6 +38,7 @@ var lucifyEmbed = function(id, url) {
 
 
 window.lucifyEmbed = lucifyEmbed;
+
 
 /*
  * File: iframeResizer.js
@@ -674,10 +680,7 @@ window.lucifyEmbed = lucifyEmbed;
     };
   }
 
-
-  console.log("heredas");
   window.iFrameResize = factory();
-
 
   // if (window.jQuery) { createJQueryPublicMethod(jQuery); }
 

@@ -1,9 +1,6 @@
 
 var React = require('react');
 
-//var mui = require('material-ui');
-//var ThemeManager = new mui.Styles.ThemeManager();
-
 
 var EmbedDecorator = function(Component) {
   return React.createClass({
@@ -12,13 +9,11 @@ var EmbedDecorator = function(Component) {
       return {
         embed: true,
         containerClass: "container-embed",
-        //muiTheme: ThemeManager.getCurrentTheme()
       }
     },
 
     childContextTypes: {
       embed: React.PropTypes.bool,
-      //muiTheme: React.PropTypes.object,
       containerClass: React.PropTypes.string
     },
 

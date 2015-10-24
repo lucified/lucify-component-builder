@@ -29,9 +29,11 @@ var context = new buildTools.BuildContext(
     options.dev, options.optimize, options.uglify);
 
 
-
+/*
+ * Create index.html
+ * with appropriate metadata
+ */
 function html(context, pageDef, baseUrl, assetContext) {
-  
   function setImageUrl(def, imageType) {
      if (def[imageType]) {
        var key = def[imageType];  
@@ -66,62 +68,47 @@ function html(context, pageDef, baseUrl, assetContext) {
 }
 
 
-// /*
-//  * Generate HTML for the embed
-//  */
-// function htmlForEmbed() {
-//   return src(j(packagePath, 'src', 'www', 'embed.hbs'))
-//     .pipe(through2.obj(function(file, enc, _cb) {
-      
-//       var asset = 'index.js';
-//       var params = {asset: asset};
-      
-//       // replace asset paths with revisioned data
-//       file.contents = new Buffer(
-//         context.hbs.renderSync(file.contents.toString(), params)) 
-//       file.path = file.path.replace(/\.hbs$/,'.html')
-
-//       // push to the outer stream
-//       this.push(file);
-//       _cb();
-//     }))
-//     //.pipe($.minifyHtml())
-//     .pipe($.rename('index.html'))
-//     .pipe(dest(context.destPath));
-// }
-
-
 /*
- * Generate temporary JSX for wrapping the react component
- * at given path as an embeddable component
+ * Generate temporary JSX for wrapping the React 
+ * component at given path as an embeddable component
  */
 function generateJSX(cb) {
   var componentPath = 'index.js';
-  var template = fs.readFileSync(j(packagePath, 'src', 'js', 'embed-template.jsx'), 'utf8');
+  var template = fs.readFileSync(j(packagePath, 'src', 'js', 'component-template.jsx'), 'utf8');
   var data = template.replace('%REPLACE%', componentPath);
   var destpath = "temp/";
   mkpath.sync(destpath);
-  fs.writeFileSync(destpath + 'embed.jsx', data);
+  fs.writeFileSync(destpath + 'component.jsx', data);
   cb();
 }
 
 
-function bundleEmbed() {
-	return buildTools.bundle('temp/embed.jsx', context);
+/*
+ * Bundle the component itself
+ */
+function bundleComponent() {
+	return buildTools.bundle('temp/component.jsx', context);
 }
 
-
+/*
+ * Bundle bootstrap code for embedding the component
+ */
 function bundleEmbedBootstrap() {
   return buildTools.bundle(j(packagePath, 'src', 'js', 'embed.jsx'), 
     context, {rev: false, outputFileName: 'embed.js'});
 }
 
+/*
+ * Bundle code for resizing embedded iFrame
+ */
 function bundleResize() {
   return buildTools.bundle(j(packagePath, 'src', 'js', 'resize.jsx'), 
     context, {rev: false, outputFileName: 'resize.js'});
 }
 
-
+/*
+ * Generate embed codes
+ */
 function embedCodes(context, baseUrl, assetContext, cb) {
 
   // if baseUrl is not defined, this is not 
@@ -173,7 +160,8 @@ function setupDistBuild() {
 }
 
 
-var prepareEmbedTasks = function(gulp, opts) {
+
+var prepareBuildTasks = function(gulp, opts) {
   if (!opts) {
       opts = {};
   }
@@ -192,7 +180,7 @@ var prepareEmbedTasks = function(gulp, opts) {
   gulp.task('styles', buildTools.styles.bind(null, context));
   gulp.task('manifest', buildTools.manifest.bind(null, context));
   gulp.task('html', html.bind(null, context, opts.pageDef, opts.baseUrl, opts.assetContext));
-	gulp.task('bundle-embed', bundleEmbed);
+	gulp.task('bundle-component', bundleComponent);
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);
   gulp.task('embed-codes', embedCodes.bind(null, context, opts.baseUrl, opts.assetContext));
@@ -210,7 +198,7 @@ var prepareEmbedTasks = function(gulp, opts) {
     'data', 
     'styles', 
     'generate-jsx',
-    'bundle-embed',
+    'bundle-component',
     'bundle-embed-bootstrap',
     'bundle-resize',
     'manifest', 
@@ -236,4 +224,4 @@ var prepareEmbedTasks = function(gulp, opts) {
 }
 
 
-module.exports = prepareEmbedTasks;
+module.exports = prepareBuildTasks;
