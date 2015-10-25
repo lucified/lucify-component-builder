@@ -38,7 +38,7 @@ function html(context, pageDef, baseUrl, assetContext) {
      if (def[imageType]) {
        var key = def[imageType];  
        var filename = (context.assetManifest[key] != null) ? context.assetManifest[key] : key;
-       def[imageType] = baseUrl + "images/" + filename;  
+       def[imageType] = baseUrl + assetContext + "images/" + filename;  
     }
   }
 
