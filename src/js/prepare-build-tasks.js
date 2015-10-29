@@ -72,10 +72,15 @@ function html(context, pageDef, baseUrl, assetContext) {
  * Generate temporary JSX for wrapping the React 
  * component at given path as an embeddable component
  */
-function generateJSX(cb) {
+function generateJSX(opts, cb) {
+  
+  var bootstrapper = opts.reactRouter === true ? 'bootstrap-react-router-component' : 'bootstrap-react-router-component';
+
   var componentPath = 'index.js';
   var template = fs.readFileSync(j(packagePath, 'src', 'js', 'component-template.jsx'), 'utf8');
-  var data = template.replace('%REPLACE%', componentPath);
+  var data = template.replace('%REPLACE%', componentPath)
+    .replace('%BOOTSTRAPPER%', bootstrapper);
+  
   var destpath = "temp/";
   mkpath.sync(destpath);
   fs.writeFileSync(destpath + 'component.jsx', data);
@@ -184,7 +189,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);
   gulp.task('embed-codes', embedCodes.bind(null, context, opts.baseUrl, opts.assetContext));
-	gulp.task('generate-jsx', generateJSX);
+	gulp.task('generate-jsx', generateJSX.bind(null, opts));
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
