@@ -9,7 +9,7 @@
   "author": "Lucify",
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/lucify/lucify-embed.git"
+    "url": "git+https://github.com/lucified/lucify-embed.git"
   },
   "license": "MIT",
   "dependencies": {
@@ -27,8 +27,8 @@
     "gulp-rev": "^6.0.1",
     "gulp-uglify": "^1.4.1",
     "handlebars": "^4.0.3",
-    "lucify-build-tools": "git+ssh://git@gitlab.com/lucify/lucify-build-tools.git",
-    "lucify-commons": "git+ssh://git@gitlab.com/lucify/lucify-commons.git",
+    "lucify-build-tools": "git+ssh://git@github.com/lucified/lucify-build-tools.git",
+    "lucify-commons": "git+ssh://git@github.com/lucified/lucify-commons.git",
     "minimist": "^1.2.0",
     "mkpath": "^0.1.0",
     "query-string": "^2.4.1",
