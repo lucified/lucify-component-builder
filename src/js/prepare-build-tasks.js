@@ -78,7 +78,7 @@ function html(context, pageDef, baseUrl, assetContext) {
  */
 function generateJSX(opts, cb) {
 
-  var bootstrapper = opts.reactRouter === true ? 'bootstrap-react-router-component' : 'bootstrap-react-router-component';
+  var bootstrapper = opts.reactRouter === true ? 'bootstrap-react-router-component' : 'bootstrap-component';
 
   var componentPath = 'index.js';
   var template = fs.readFileSync(j(packagePath, 'src', 'js', 'component-template.jsx'), 'utf8');
