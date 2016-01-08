@@ -56,9 +56,11 @@ function html(context, pageDef, baseUrl, assetContext) {
         def = {title: "Lucify component"};
       }
 
-      // by default, google analytics and riveted is enabled
+      // by default, google analytics, riveted, etc are enabled
       def.googleAnalytics = def.googleAnalytics === false ? false : true;
       def.riveted = def.riveted === false ? false : true;
+      def.adsByGoogle = def.adsByGoogle === false ? false : true;
+      def.iFrameResize = def.iFrameResize === false ? false : true;
 
       file.contents = new Buffer(
         context.hbs.renderSync(file.contents.toString(), def));
