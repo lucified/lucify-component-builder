@@ -21,7 +21,7 @@ var packagePath = j('node_modules', 'lucify-component-builder');
 
 
 var options = parseArgs(process.argv, {default: {
-	optimize: false, 
+	optimize: false,
 	uglify: false,
   dev: true}});
 
@@ -36,15 +36,15 @@ var context = new buildTools.BuildContext(
 function html(context, pageDef, baseUrl, assetContext) {
   function setImageUrl(def, imageType) {
      if (def[imageType]) {
-       var key = def[imageType];  
+       var key = def[imageType];
        var filename = (context.assetManifest[key] != null) ? context.assetManifest[key] : key;
-       def[imageType] = baseUrl + assetContext + "images/" + filename;  
+       def[imageType] = baseUrl + assetContext + "images/" + filename;
     }
   }
 
   return src(j(packagePath, 'src', 'www', 'embed.hbs'))
     .pipe(through2.obj(function(file, enc, _cb) {
-      
+
       var def;
       if (pageDef != null) {
         def = deepcopy(pageDef);
@@ -55,9 +55,15 @@ function html(context, pageDef, baseUrl, assetContext) {
       } else {
         def = {title: "Lucify component"};
       }
-      
+
+      // by default, google analytics, riveted, etc are enabled
+      def.googleAnalytics = def.googleAnalytics === false ? false : true;
+      def.riveted = def.riveted === false ? false : true;
+      def.adsByGoogle = def.adsByGoogle === false ? false : true;
+      def.iFrameResize = def.iFrameResize === false ? false : true;
+
       file.contents = new Buffer(
-        context.hbs.renderSync(file.contents.toString(), def)); 
+        context.hbs.renderSync(file.contents.toString(), def));
       //file.path = file.path.replace(/\.hbs$/,'.html')
       this.push(file);
       _cb();
@@ -69,13 +75,18 @@ function html(context, pageDef, baseUrl, assetContext) {
 
 
 /*
- * Generate temporary JSX for wrapping the React 
+ * Generate temporary JSX for wrapping the React
  * component at given path as an embeddable component
  */
-function generateJSX(cb) {
+function generateJSX(opts, cb) {
+
+  var bootstrapper = opts.reactRouter === true ? 'bootstrap-react-router-component' : 'bootstrap-component';
+
   var componentPath = 'index.js';
   var template = fs.readFileSync(j(packagePath, 'src', 'js', 'component-template.jsx'), 'utf8');
-  var data = template.replace('%REPLACE%', componentPath);
+  var data = template.replace('%REPLACE%', componentPath)
+    .replace('%BOOTSTRAPPER%', bootstrapper);
+
   var destpath = "temp/";
   mkpath.sync(destpath);
   fs.writeFileSync(destpath + 'component.jsx', data);
@@ -94,7 +105,7 @@ function bundleComponent() {
  * Bundle bootstrap code for embedding the component
  */
 function bundleEmbedBootstrap() {
-  return buildTools.bundle(j(packagePath, 'src', 'js', 'embed.jsx'), 
+  return buildTools.bundle(j(packagePath, 'src', 'js', 'embed.jsx'),
     context, {rev: false, outputFileName: 'embed.js'});
 }
 
@@ -102,7 +113,7 @@ function bundleEmbedBootstrap() {
  * Bundle code for resizing embedded iFrame
  */
 function bundleResize() {
-  return buildTools.bundle(j(packagePath, 'src', 'js', 'resize.jsx'), 
+  return buildTools.bundle(j(packagePath, 'src', 'js', 'resize.jsx'),
     context, {rev: false, outputFileName: 'resize.js'});
 }
 
@@ -111,7 +122,7 @@ function bundleResize() {
  */
 function embedCodes(context, baseUrl, assetContext, cb) {
 
-  // if baseUrl is not defined, this is not 
+  // if baseUrl is not defined, this is not
   // intended to be embeddable, and there is
   // no need to generate embed codes
   if (!baseUrl) {
@@ -123,14 +134,14 @@ function embedCodes(context, baseUrl, assetContext, cb) {
   var url = context.dev ? "http://localhost:3000/" : baseUrl + assetContext;
 
   return src(j(packagePath, 'src', 'www', 'embed-codes.hbs'))
-    .pipe(through2.obj(function(file, enc, _cb) {      
+    .pipe(through2.obj(function(file, enc, _cb) {
       var params = {
         scriptTagEmbedCode: embedCode.getScriptTagEmbedCode(url),
         iFrameWithRemoteResizeEmbedCode: embedCode.getIFrameEmbedCodeWithRemoteResize(url),
         iFrameWithInlineResizeEmbedCode: embedCode.getIFrameEmbedCodeWithInlineResize(url),
       };
       file.contents = new Buffer(
-      context.hbs.renderSync(file.contents.toString(), params)) 
+      context.hbs.renderSync(file.contents.toString(), params))
       this.push(file);
       _cb();
     }))
@@ -184,7 +195,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);
   gulp.task('embed-codes', embedCodes.bind(null, context, opts.baseUrl, opts.assetContext));
-	gulp.task('generate-jsx', generateJSX);
+	gulp.task('generate-jsx', generateJSX.bind(null, opts));
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
@@ -194,14 +205,14 @@ var prepareBuildTasks = function(gulp, opts) {
     .bind(null, opts.defaultBucket, opts.publishFromFolder, opts.publishToFolder));
 
   var buildTaskNames = [
-    'images', 
-    'data', 
-    'styles', 
+    'images',
+    'data',
+    'styles',
     'generate-jsx',
     'bundle-component',
     'bundle-embed-bootstrap',
     'bundle-resize',
-    'manifest', 
+    'manifest',
     'embed-codes',
     'html'];
 
@@ -216,7 +227,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('default', gulp.series(
     'set-watch', 'build', 'watch', 'serve'));
 
-  // It is important to do deploy in series to 
+  // It is important to do deploy in series to
   // achieve an "atomic" update. uploading index.html
   // before hashed assets would be bad -- JOJ
   gulp.task('s3-deploy', gulp.series(
