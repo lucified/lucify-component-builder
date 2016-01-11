@@ -73,6 +73,8 @@ function htmlForPage(context, pageDef, baseUrl, assetContext) {
 
       // by default, google analytics, riveted, etc are enabled
       def.googleAnalytics = def.googleAnalytics === false ? false : true;
+      def.googleAnalyticsSendPageView = def.googleAnalyticsSendPageView === false ? false : true;
+
       def.riveted = def.riveted === false ? false : true;
       def.adsByGoogle = def.adsByGoogle === false ? false : true;
       def.iFrameResize = def.iFrameResize === false ? false : true;
