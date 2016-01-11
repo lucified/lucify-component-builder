@@ -17,16 +17,18 @@ var src  = gulp.src;
 var dest = gulp.dest;
 var j = path.join;
 
-var packagePath = j('node_modules', 'lucify-component-builder');
-
+var defaultPackagePath = j('node_modules', 'lucify-component-builder');
 
 var options = parseArgs(process.argv, {default: {
 	optimize: false,
 	uglify: false,
-  dev: true}});
+  dev: true,
+  packagePath: defaultPackagePath}});
 
 var context = new buildTools.BuildContext(
     options.dev, options.optimize, options.uglify);
+
+var packagePath = options.packagePath;
 
 
 /*
@@ -90,7 +92,11 @@ function generateJSX(opts, cb) {
   var destpath = "temp/";
   mkpath.sync(destpath);
   fs.writeFileSync(destpath + 'component.jsx', data);
-  cb();
+
+  return src(j(packagePath, 'src', 'js', '*.jsx'))
+    .pipe(dest(destpath));
+
+  //cb();
 }
 
 
