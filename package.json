@@ -13,9 +13,11 @@
   },
   "license": "MIT",
   "dependencies": {
+    "babelify": "^7.2.0",
     "browser-sync": "^2.9.7",
     "deepcopy": "^0.5.0",
     "del": "^2.0.2",
+    "gulp": "gulpjs/gulp#4.0",
     "gulp-load-plugins": "^0.10.0",
     "gulp-notify": "^2.2.0",
     "gulp-rename": "^1.2.2",
