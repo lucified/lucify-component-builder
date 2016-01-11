@@ -1,5 +1,5 @@
 
 var Component = require('../%REPLACE%');
 
-var bootstrap = require('lucify-component-builder/src/js/%BOOTSTRAPPER%.jsx');
+var bootstrap = require('./%BOOTSTRAPPER%.jsx');
 bootstrap(Component);
