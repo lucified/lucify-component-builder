@@ -10,7 +10,7 @@
     "postinstall": "ln -s ../../../ node_modules/lucify-component-builder"
   },
   "engines": {
-    "node": "0.12.7"
+    "node": "~0.12.7"
   },
   "license": "",
   "dependencies": {
