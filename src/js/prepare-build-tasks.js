@@ -9,6 +9,7 @@ var mkpath = require('mkpath');
 var del = require('del');
 var parseArgs = require('minimist');
 var deepcopy = require('deepcopy');
+var mergeStream = require('merge-stream');
 
 var buildTools = require('lucify-build-tools');
 var embedCode = require('lucify-commons/src/js/embed-code.js');
@@ -31,11 +32,23 @@ var context = new buildTools.BuildContext(
 var packagePath = options.packagePath;
 
 
+function html(context, opts, baseUrl, assetContext) {
+  if (!opts.pageDefs) {
+      return htmlForPageDef(context, opts.pageDef, baseUrl, assetContext);
+  }
+
+  return mergeStream(opts.pageDefs.map(function(def) {
+    return htmlForPage(context, def, baseUrl, assetContext);
+  }));
+}
+
+
 /*
  * Create index.html
  * with appropriate metadata
  */
-function html(context, pageDef, baseUrl, assetContext) {
+function htmlForPage(context, pageDef, baseUrl, assetContext) {
+
   function setImageUrl(def, imageType) {
      if (def[imageType]) {
        var key = def[imageType];
@@ -72,7 +85,7 @@ function html(context, pageDef, baseUrl, assetContext) {
     }))
     //.pipe($.minifyHtml())
     .pipe($.rename('index.html'))
-    .pipe(dest(context.destPath));
+    .pipe(dest(context.destPath + pageDef.path));
 }
 
 
@@ -193,7 +206,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('data', buildTools.data.bind(null, context, opts.paths));
   gulp.task('styles', buildTools.styles.bind(null, context));
   gulp.task('manifest', buildTools.manifest.bind(null, context));
-  gulp.task('html', html.bind(null, context, opts.pageDef, opts.baseUrl, opts.assetContext));
+  gulp.task('html', html.bind(null, context, opts, opts.baseUrl, opts.assetContext));
   gulp.task('bundle-component', bundleComponent);
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);
