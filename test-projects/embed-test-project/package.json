@@ -16,7 +16,7 @@
   "dependencies": {
     "babelify": "^6.4.0",
     "gulp": "gulpjs/gulp#4.0",
-    "lucify-commons": "git+ssh://git@github.com/lucified/lucify-commons.git",
+    "lucify-commons": "~0.2.2",
     "react": "0.13.3"
   },
   "browserify": {
