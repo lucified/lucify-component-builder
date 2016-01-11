@@ -1,0 +1,7 @@
+
+build/
+dist
+node_modules/
+temp/*.jsx
+.awspublish*
+npm-debug.log
