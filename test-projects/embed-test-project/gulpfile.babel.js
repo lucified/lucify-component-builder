@@ -8,8 +8,8 @@ var opts = {
 	defaultBucket: 'lucify-dev',
 	maxAge: 3600,
 	assetContext: 'embed/taxes-main-content-v2/',
-	baseUrl: 'http://dev.lucify.com/',
-}
+	baseUrl: 'http://dev.lucify.com/'
+};
 
 var builder = require('../../index.js'); // lucify-component-builder
 builder(gulp, opts);

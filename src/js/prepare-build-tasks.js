@@ -20,8 +20,8 @@ var j = path.join;
 var defaultPackagePath = j('node_modules', 'lucify-component-builder');
 
 var options = parseArgs(process.argv, {default: {
-	optimize: false,
-	uglify: false,
+  optimize: false,
+  uglify: false,
   dev: true,
   packagePath: defaultPackagePath}});
 
@@ -95,8 +95,6 @@ function generateJSX(opts, cb) {
 
   return src(j(packagePath, 'src', 'js', '*.jsx'))
     .pipe(dest(destpath));
-
-  //cb();
 }
 
 
@@ -104,7 +102,7 @@ function generateJSX(opts, cb) {
  * Bundle the component itself
  */
 function bundleComponent() {
-	return buildTools.bundle('temp/component.jsx', context);
+  return buildTools.bundle('temp/component.jsx', context);
 }
 
 /*
@@ -147,7 +145,7 @@ function embedCodes(context, baseUrl, assetContext, cb) {
         iFrameWithInlineResizeEmbedCode: embedCode.getIFrameEmbedCodeWithInlineResize(url),
       };
       file.contents = new Buffer(
-      context.hbs.renderSync(file.contents.toString(), params))
+        context.hbs.renderSync(file.contents.toString(), params));
       this.push(file);
       _cb();
     }))
@@ -157,8 +155,8 @@ function embedCodes(context, baseUrl, assetContext, cb) {
 
 
 function setWatch(cb) {
-	context.watch = true;
-	cb();
+  context.watch = true;
+  cb();
 }
 
 
@@ -177,7 +175,6 @@ function setupDistBuild() {
 }
 
 
-
 var prepareBuildTasks = function(gulp, opts) {
   if (!opts) {
       opts = {};
@@ -192,16 +189,16 @@ var prepareBuildTasks = function(gulp, opts) {
 
   gulp.task('prepare-skeleton', prepareSkeleton);
   gulp.task('set-watch', setWatch);
-	gulp.task('images', buildTools.images.bind(null, context, opts.paths));
+  gulp.task('images', buildTools.images.bind(null, context, opts.paths));
   gulp.task('data', buildTools.data.bind(null, context, opts.paths));
   gulp.task('styles', buildTools.styles.bind(null, context));
   gulp.task('manifest', buildTools.manifest.bind(null, context));
   gulp.task('html', html.bind(null, context, opts.pageDef, opts.baseUrl, opts.assetContext));
-	gulp.task('bundle-component', bundleComponent);
+  gulp.task('bundle-component', bundleComponent);
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);
   gulp.task('embed-codes', embedCodes.bind(null, context, opts.baseUrl, opts.assetContext));
-	gulp.task('generate-jsx', generateJSX.bind(null, opts));
+  gulp.task('generate-jsx', generateJSX.bind(null, opts));
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
@@ -238,7 +235,7 @@ var prepareBuildTasks = function(gulp, opts) {
   // before hashed assets would be bad -- JOJ
   gulp.task('s3-deploy', gulp.series(
     's3-hashed', 's3-entry-points', buildTools.s3.writeCache));
-}
+};
 
 
 module.exports = prepareBuildTasks;
