@@ -120,9 +120,16 @@
     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
     ga('create', 'UA-65400709-1', 'auto');
+
+  </script>
+  {{/if}}
+
+  {{#if googleAnalyticsSendPageView}}
+  <script>
     ga('send', 'pageview');
   </script>
   {{/if}}
+
 
 {{#if riveted}}
 <script>

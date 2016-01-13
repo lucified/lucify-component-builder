@@ -9,6 +9,7 @@ var mkpath = require('mkpath');
 var del = require('del');
 var parseArgs = require('minimist');
 var deepcopy = require('deepcopy');
+var mergeStream = require('merge-stream');
 
 var buildTools = require('lucify-build-tools');
 var embedCode = require('lucify-commons/src/js/embed-code.js');
@@ -31,11 +32,23 @@ var context = new buildTools.BuildContext(
 var packagePath = options.packagePath;
 
 
+function html(context, opts, baseUrl, assetContext) {
+  if (!opts.pageDefs) {
+      return htmlForPageDef(context, opts.pageDef, baseUrl, assetContext);
+  }
+
+  return mergeStream(opts.pageDefs.map(function(def) {
+    return htmlForPage(context, def, baseUrl, assetContext);
+  }));
+}
+
+
 /*
  * Create index.html
  * with appropriate metadata
  */
-function html(context, pageDef, baseUrl, assetContext) {
+function htmlForPage(context, pageDef, baseUrl, assetContext) {
+
   function setImageUrl(def, imageType) {
      if (def[imageType]) {
        var key = def[imageType];
@@ -44,26 +57,30 @@ function html(context, pageDef, baseUrl, assetContext) {
     }
   }
 
+  var def;
+  if (pageDef != null) {
+    def = deepcopy(pageDef);
+    def.url = baseUrl + assetContext;
+    setImageUrl(def, 'twitterImage');
+    setImageUrl(def, 'openGraphImage');
+    setImageUrl(def, 'schemaImage');
+  } else {
+    def = {title: "Lucify component"};
+  }
+
+  // default subpath by default
+  def.path = def.path != null ? def.path : '';
+
+  // by default, google analytics, riveted, etc are enabled
+  def.googleAnalytics = def.googleAnalytics === false ? false : true;
+  def.googleAnalyticsSendPageView = def.googleAnalyticsSendPageView === false ? false : true;
+
+  def.riveted = def.riveted === false ? false : true;
+  def.adsByGoogle = def.adsByGoogle === false ? false : true;
+  def.iFrameResize = def.iFrameResize === false ? false : true;
+
   return src(j(packagePath, 'src', 'www', 'embed.hbs'))
     .pipe(through2.obj(function(file, enc, _cb) {
-
-      var def;
-      if (pageDef != null) {
-        def = deepcopy(pageDef);
-        def.url = baseUrl + assetContext;
-        setImageUrl(def, 'twitterImage');
-        setImageUrl(def, 'openGraphImage');
-        setImageUrl(def, 'schemaImage');
-      } else {
-        def = {title: "Lucify component"};
-      }
-
-      // by default, google analytics, riveted, etc are enabled
-      def.googleAnalytics = def.googleAnalytics === false ? false : true;
-      def.riveted = def.riveted === false ? false : true;
-      def.adsByGoogle = def.adsByGoogle === false ? false : true;
-      def.iFrameResize = def.iFrameResize === false ? false : true;
-
       file.contents = new Buffer(
         context.hbs.renderSync(file.contents.toString(), def));
       //file.path = file.path.replace(/\.hbs$/,'.html')
@@ -72,7 +89,7 @@ function html(context, pageDef, baseUrl, assetContext) {
     }))
     //.pipe($.minifyHtml())
     .pipe($.rename('index.html'))
-    .pipe(dest(context.destPath));
+    .pipe(dest(context.destPath + def.path));
 }
 
 
@@ -193,7 +210,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('data', buildTools.data.bind(null, context, opts.paths));
   gulp.task('styles', buildTools.styles.bind(null, context));
   gulp.task('manifest', buildTools.manifest.bind(null, context));
-  gulp.task('html', html.bind(null, context, opts.pageDef, opts.baseUrl, opts.assetContext));
+  gulp.task('html', html.bind(null, context, opts, opts.baseUrl, opts.assetContext));
   gulp.task('bundle-component', bundleComponent);
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);

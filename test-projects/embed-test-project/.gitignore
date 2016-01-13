@@ -3,5 +3,6 @@ build/
 dist
 node_modules/
 temp/*.jsx
+temp/asset-manifest.json
 .awspublish*
 npm-debug.log
