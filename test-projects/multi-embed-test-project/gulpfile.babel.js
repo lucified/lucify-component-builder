@@ -4,11 +4,11 @@ var gulp = require('gulp');
 var embedDefs = [
   {
     componentPath: 'src/js/components/hello-world.jsx',
-    webPath: 'hello-world/'
+    path: '/hello-world'
   },
   {
     componentPath: 'src/js/components/hello-world-two.jsx',
-    webPath: 'hello-world-two'
+    path: '/hello-world-two'
   }
 ];
 
