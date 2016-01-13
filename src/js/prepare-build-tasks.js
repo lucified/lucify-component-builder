@@ -57,28 +57,30 @@ function htmlForPage(context, pageDef, baseUrl, assetContext) {
     }
   }
 
+  var def;
+  if (pageDef != null) {
+    def = deepcopy(pageDef);
+    def.url = baseUrl + assetContext;
+    setImageUrl(def, 'twitterImage');
+    setImageUrl(def, 'openGraphImage');
+    setImageUrl(def, 'schemaImage');
+  } else {
+    def = {title: "Lucify component"};
+  }
+
+  // default subpath by default
+  def.path = def.path != null ? def.path : '';
+
+  // by default, google analytics, riveted, etc are enabled
+  def.googleAnalytics = def.googleAnalytics === false ? false : true;
+  def.googleAnalyticsSendPageView = def.googleAnalyticsSendPageView === false ? false : true;
+
+  def.riveted = def.riveted === false ? false : true;
+  def.adsByGoogle = def.adsByGoogle === false ? false : true;
+  def.iFrameResize = def.iFrameResize === false ? false : true;
+
   return src(j(packagePath, 'src', 'www', 'embed.hbs'))
     .pipe(through2.obj(function(file, enc, _cb) {
-
-      var def;
-      if (pageDef != null) {
-        def = deepcopy(pageDef);
-        def.url = baseUrl + assetContext;
-        setImageUrl(def, 'twitterImage');
-        setImageUrl(def, 'openGraphImage');
-        setImageUrl(def, 'schemaImage');
-      } else {
-        def = {title: "Lucify component"};
-      }
-
-      // by default, google analytics, riveted, etc are enabled
-      def.googleAnalytics = def.googleAnalytics === false ? false : true;
-      def.googleAnalyticsSendPageView = def.googleAnalyticsSendPageView === false ? false : true;
-
-      def.riveted = def.riveted === false ? false : true;
-      def.adsByGoogle = def.adsByGoogle === false ? false : true;
-      def.iFrameResize = def.iFrameResize === false ? false : true;
-
       file.contents = new Buffer(
         context.hbs.renderSync(file.contents.toString(), def));
       //file.path = file.path.replace(/\.hbs$/,'.html')
@@ -87,7 +89,7 @@ function htmlForPage(context, pageDef, baseUrl, assetContext) {
     }))
     //.pipe($.minifyHtml())
     .pipe($.rename('index.html'))
-    .pipe(dest(context.destPath + pageDef.path));
+    .pipe(dest(context.destPath + def.path));
 }
 
 
