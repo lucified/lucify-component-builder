@@ -45,7 +45,7 @@ function html(context, opts, baseUrl, assetContext) {
       }));
   }
 
-  return htmlForPageDef(context, opts.pageDef, baseUrl, assetContext, true);
+  return htmlForPage(context, opts.pageDef, baseUrl, assetContext, true);
 }
 
 
@@ -105,7 +105,7 @@ function htmlForPage(context, pageDef, baseUrl, assetContext, rootRef) {
 
 function bundleComponents(opts, context) {
   if (!opts.embedDefs) {
-      return createJsxAndBundle({
+      return createJsxAndBundle(opts, context, {
           reactRouter: opts.reactRouter,
           componentPath: 'index.js',
           path: ''});
@@ -181,10 +181,21 @@ function bundleResize() {
     context, {rev: false, outputFileName: 'resize.js'});
 }
 
+
+function embedCodes(context, opts) {
+  if (Array.isArray(opts.embedDefs)) {
+      return mergeStream(opts.embedDefs.map(function(def) {
+        return embedCodesPage(context, opts.baseUrl, opts.assetContext, def.path);
+      }));
+  }
+  return embedCodesPage(context, opts.baseUrl, opts.assetContext, '');
+}
+
+
 /*
  * Generate embed codes
  */
-function embedCodes(context, baseUrl, assetContext, cb) {
+function embedCodesPage(context, baseUrl, assetContext, path) {
 
   // if baseUrl is not defined, this is not
   // intended to be embeddable, and there is
@@ -195,14 +206,16 @@ function embedCodes(context, baseUrl, assetContext, cb) {
   }
 
   // for dev builds baseUrl is always localhost
-  var url = context.dev ? "http://localhost:3000/" : baseUrl + assetContext;
+  var urlPath = path.substring(1) + "/";
+  var embedUrl = context.dev ? ("http://localhost:3000/" + urlPath) : baseUrl + assetContext + urlPath;
+  var baseUrl = context.dev ? ("http://localhost:3000/") : baseUrl + assetContext;
 
   return src(j(packagePath, 'src', 'www', 'embed-codes.hbs'))
     .pipe(through2.obj(function(file, enc, _cb) {
       var params = {
-        scriptTagEmbedCode: embedCode.getScriptTagEmbedCode(url),
-        iFrameWithRemoteResizeEmbedCode: embedCode.getIFrameEmbedCodeWithRemoteResize(url),
-        iFrameWithInlineResizeEmbedCode: embedCode.getIFrameEmbedCodeWithInlineResize(url),
+        scriptTagEmbedCode: embedCode.getScriptTagEmbedCode(baseUrl, embedUrl),
+        iFrameWithRemoteResizeEmbedCode: embedCode.getIFrameEmbedCodeWithRemoteResize(baseUrl, embedUrl),
+        iFrameWithInlineResizeEmbedCode: embedCode.getIFrameEmbedCodeWithInlineResize(baseUrl, embedUrl),
       };
       file.contents = new Buffer(
         context.hbs.renderSync(file.contents.toString(), params));
@@ -210,7 +223,7 @@ function embedCodes(context, baseUrl, assetContext, cb) {
       _cb();
     }))
     .pipe($.rename('embed-codes.html'))
-    .pipe(dest(context.destPath));
+    .pipe(dest(context.destPath + path));
 }
 
 
@@ -255,11 +268,9 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('manifest', buildTools.manifest.bind(null, context));
   gulp.task('html', html.bind(null, context, opts, opts.baseUrl, opts.assetContext));
   gulp.task('bundle-components', bundleComponents.bind(null, opts, context));
-  //gulp.task('bundle-component', bundleComponent);
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);
-  gulp.task('embed-codes', embedCodes.bind(null, context, opts.baseUrl, opts.assetContext));
-  //gulp.task('generate-jsx', generateJSX.bind(null, opts));
+  gulp.task('embed-codes', embedCodes.bind(null, context, opts));
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
