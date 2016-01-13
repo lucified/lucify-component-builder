@@ -144,7 +144,11 @@ var riveted=function(){function e(e){e=e||{},g=parseInt(e.reportInterval,10)||5,
   <script>riveted.init({reportInterval: 10, nonInteraction: false});</script>
 {{/if}}
 
-  <script src="/{{{assetPath 'index.js'}}}"></script>
+{{#if rootRef}}
+<script src="/{{{jsResolvedFileName}}}"></script>
+{{else}}
+<script src="{{{jsResolvedFileName}}}"></script>
+{{/if}}
 
 {{#if adsByGoogle}}
   <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js">

@@ -33,13 +33,19 @@ var packagePath = options.packagePath;
 
 
 function html(context, opts, baseUrl, assetContext) {
-  if (!opts.pageDefs) {
-      return htmlForPageDef(context, opts.pageDef, baseUrl, assetContext);
+  if (Array.isArray(opts.pageDefs)) {
+      return mergeStream(opts.pageDefs.map(function(def) {
+        return htmlForPage(context, def, baseUrl, assetContext, true);
+      }));
   }
 
-  return mergeStream(opts.pageDefs.map(function(def) {
-    return htmlForPage(context, def, baseUrl, assetContext);
-  }));
+  if (Array.isArray(opts.embedDefs)) {
+      return mergeStream(opts.embedDefs.map(function(def) {
+        return htmlForPage(context, def, baseUrl, assetContext, false);
+      }));
+  }
+
+  return htmlForPageDef(context, opts.pageDef, baseUrl, assetContext, true);
 }
 
 
@@ -47,7 +53,7 @@ function html(context, opts, baseUrl, assetContext) {
  * Create index.html
  * with appropriate metadata
  */
-function htmlForPage(context, pageDef, baseUrl, assetContext) {
+function htmlForPage(context, pageDef, baseUrl, assetContext, rootRef) {
 
   function setImageUrl(def, imageType) {
      if (def[imageType]) {
@@ -68,6 +74,9 @@ function htmlForPage(context, pageDef, baseUrl, assetContext) {
     def = {title: "Lucify component"};
   }
 
+  var jsFileName = rootRef ? 'index.js' : getJsFileName(pageDef);
+  def.jsResolvedFileName = context.assetManifest[jsFileName] || jsFileName;
+
   // default subpath by default
   def.path = def.path != null ? def.path : '';
 
@@ -78,6 +87,7 @@ function htmlForPage(context, pageDef, baseUrl, assetContext) {
   def.riveted = def.riveted === false ? false : true;
   def.adsByGoogle = def.adsByGoogle === false ? false : true;
   def.iFrameResize = def.iFrameResize === false ? false : true;
+  def.rootRef = rootRef;
 
   return src(j(packagePath, 'src', 'www', 'embed.hbs'))
     .pipe(through2.obj(function(file, enc, _cb) {
@@ -93,23 +103,52 @@ function htmlForPage(context, pageDef, baseUrl, assetContext) {
 }
 
 
+function bundleComponents(opts, context) {
+  if (!opts.embedDefs) {
+      return createJsxAndBundle({
+          reactRouter: opts.reactRouter,
+          componentPath: 'index.js',
+          path: ''});
+  }
+  return mergeStream(opts.embedDefs.map(function(edef) {
+      return createJsxAndBundle(opts, context, edef);
+  }));
+}
+
+
+function getJsFileName(edef) {
+    var ret = edef.path === '' ? 'index.js' : 'index' + edef.path.replace('/', '-') + '.js';
+    return ret;
+}
+
+
+function getTempFileName(edef) {
+    var ret = edef.path === '' ? 'component.jsx' : 'component' + edef.path.replace('/', '-') + '.jsx';
+    return ret;
+}
+
+
+function createJsxAndBundle(opts, context, edef) {
+  var destPath = context.destPath + edef.path;
+  return mergeStream(
+      generateJSX(edef.reactRouter, edef.componentPath, getTempFileName(edef)),
+      bundleComponent(destPath, getJsFileName(edef), getTempFileName(edef)));
+}
+
+
 /*
  * Generate temporary JSX for wrapping the React
  * component at given path as an embeddable component
  */
-function generateJSX(opts, cb) {
-
-  var bootstrapper = opts.reactRouter === true ? 'bootstrap-react-router-component' : 'bootstrap-component';
-
-  var componentPath = 'index.js';
+function generateJSX(reactRouter, componentPath, tempFileName) {
+  var bootstrapper = reactRouter === true ? 'bootstrap-react-router-component' : 'bootstrap-component';
   var template = fs.readFileSync(j(packagePath, 'src', 'js', 'component-template.jsx'), 'utf8');
   var data = template.replace('%REPLACE%', componentPath)
     .replace('%BOOTSTRAPPER%', bootstrapper);
 
   var destpath = "temp/";
   mkpath.sync(destpath);
-  fs.writeFileSync(destpath + 'component.jsx', data);
-
+  fs.writeFileSync(destpath + tempFileName, data);
   return src(j(packagePath, 'src', 'js', '*.jsx'))
     .pipe(dest(destpath));
 }
@@ -118,8 +157,12 @@ function generateJSX(opts, cb) {
 /*
  * Bundle the component itself
  */
-function bundleComponent() {
-  return buildTools.bundle('temp/component.jsx', context);
+function bundleComponent(destPath, outputFileName, tempFileName) {
+  var opts = {
+      destPath: destPath,
+      outputFileName: outputFileName
+  }
+  return buildTools.bundle('temp/' + tempFileName, context, opts);
 }
 
 /*
@@ -211,11 +254,12 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('styles', buildTools.styles.bind(null, context));
   gulp.task('manifest', buildTools.manifest.bind(null, context));
   gulp.task('html', html.bind(null, context, opts, opts.baseUrl, opts.assetContext));
-  gulp.task('bundle-component', bundleComponent);
+  gulp.task('bundle-components', bundleComponents.bind(null, opts, context));
+  //gulp.task('bundle-component', bundleComponent);
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);
   gulp.task('embed-codes', embedCodes.bind(null, context, opts.baseUrl, opts.assetContext));
-  gulp.task('generate-jsx', generateJSX.bind(null, opts));
+  //gulp.task('generate-jsx', generateJSX.bind(null, opts));
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
@@ -228,8 +272,8 @@ var prepareBuildTasks = function(gulp, opts) {
     'images',
     'data',
     'styles',
-    'generate-jsx',
-    'bundle-component',
+    //'generate-jsx',
+    'bundle-components',
     'bundle-embed-bootstrap',
     'bundle-resize',
     'manifest',
