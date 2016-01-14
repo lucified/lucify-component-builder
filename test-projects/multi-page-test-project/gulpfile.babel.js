@@ -2,25 +2,22 @@
 var gulp = require('gulp');
 
 var defs = [
-
   {
-      title: 'Test Index Title',
-      path: '',
-      description: 'Test index description',
-      twitterImage: '20euro.png',
-      openGraphImage: '50euro.png',
-      schemaImage: '100euro.png'
+    title: 'Test Index Title',
+    path: '',
+    description: 'Test index description',
+    twitterImage: '20euro.png',
+    openGraphImage: '50euro.png',
+    schemaImage: '100euro.png'
   },
-
   {
-      path: '/subpage',
-      title: 'Test Subpage Title',
-      description: 'Test subpage description',
-      twitterImage: '100euro.png',
-      openGraphImage: '50euro.png',
-      schemaImage: '20euro.png'
+    path: '/subpage',
+    title: 'Test Subpage Title',
+    description: 'Test subpage description',
+    twitterImage: '100euro.png',
+    openGraphImage: '50euro.png',
+    schemaImage: '20euro.png'
   }
-
 ];
 
 

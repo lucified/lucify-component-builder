@@ -15,12 +15,12 @@ var embedDefs = [
 
 var opts = {
   embedDefs: embedDefs,
-	paths: ['node_modules/lucify-commons', 'test_modules/module1'],
-	publishFromFolder: 'dist',
-	defaultBucket: 'lucify-dev',
-	maxAge: 3600,
-	assetContext: 'embed/',
-	baseUrl: 'http://dev.lucify.com/'
+  paths: ['node_modules/lucify-commons', 'test_modules/module1'],
+  publishFromFolder: 'dist',
+  defaultBucket: 'lucify-dev',
+  maxAge: 3600,
+  assetContext: 'embed/',
+  baseUrl: 'http://dev.lucify.com/'
 };
 
 

@@ -7,11 +7,11 @@ var opts = {
 
   pageDef: template.apply({
     title: "Hello World Title",
-        description: 'Hello World description',
-        ogType: 'article',
-        twitterImage: '50euro.jpg',
-        openGraphImage: '100euro.jpg',
-        schemaImage: '200euro.jpg'
+    description: 'Hello World description',
+    ogType: 'article',
+    twitterImage: '50euro.jpg',
+    openGraphImage: '100euro.jpg',
+    schemaImage: '200euro.jpg'
   }),
 
   iFrameResize: false,
