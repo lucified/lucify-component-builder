@@ -305,8 +305,7 @@ var prepareBuildTasks = function(gulp, opts) {
   // It is important to do deploy in series to
   // achieve an "atomic" update. uploading index.html
   // before hashed assets would be bad -- JOJ
-  gulp.task('s3-deploy', gulp.series(
-    's3-hashed', 's3-entry-points', buildTools.s3.writeCache));
+  gulp.task('s3-deploy', gulp.series('s3-hashed', 's3-entry-points'));
 };
 
 
