@@ -10,6 +10,7 @@ var del = require('del');
 var parseArgs = require('minimist');
 var deepcopy = require('deepcopy');
 var mergeStream = require('merge-stream');
+var replaceall = require("replaceall");
 
 var buildTools = require('lucify-build-tools');
 var embedCode = require('lucify-commons/src/js/embed-code.js');
@@ -117,13 +118,13 @@ function bundleComponents(opts, context) {
 
 
 function getJsFileName(edef) {
-    var ret = edef.path === '' ? 'index.js' : 'index' + edef.path.replace('/', '-') + '.js';
+    var ret = edef.path === '' ? 'index.js' : 'index' + replaceall('/', '-', edef.path) + '.js';
     return ret;
 }
 
 
 function getTempFileName(edef) {
-    var ret = edef.path === '' ? 'component.jsx' : 'component' + edef.path.replace('/', '-') + '.jsx';
+    var ret = edef.path === '' ? 'component.jsx' : 'component' + replaceall('/', '-', edef.path) + '.jsx';
     return ret;
 }
 
