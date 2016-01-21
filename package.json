@@ -26,6 +26,7 @@
     "minimist": "^1.2.0",
     "mkpath": "^0.1.0",
     "query-string": "^2.4.1",
+    "replaceall": "^0.1.6",
     "through2": "^2.0.0"
   },
   "browserify": {
