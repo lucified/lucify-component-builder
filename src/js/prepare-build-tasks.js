@@ -32,6 +32,11 @@ var context = new buildTools.BuildContext(
 var packagePath = options.packagePath;
 
 
+String.prototype.endsWith = function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};
+
+
 function html(context, opts, baseUrl, assetContext) {
   if (Array.isArray(opts.pageDefs)) {
       return mergeStream(opts.pageDefs.map(function(def) {
@@ -66,7 +71,6 @@ function htmlForPage(context, pageDef, baseUrl, assetContext, rootRef) {
   var def;
   if (pageDef != null) {
     def = deepcopy(pageDef);
-    def.url = baseUrl + assetContext;
     setImageUrl(def, 'twitterImage');
     setImageUrl(def, 'openGraphImage');
     setImageUrl(def, 'schemaImage');
@@ -79,6 +83,11 @@ function htmlForPage(context, pageDef, baseUrl, assetContext, rootRef) {
 
   // default subpath by default
   def.path = def.path != null ? def.path : '';
+  def.url = baseUrl + assetContext + def.path.replace('/', '');
+
+  if (!def.url.endsWith('/')) {
+    def.url = def.url + "/";
+  }
 
   // by default, google analytics, riveted, etc are enabled
   def.googleAnalytics = def.googleAnalytics === false ? false : true;
