@@ -8,7 +8,7 @@ var embedDefs = [
   },
   {
     componentPath: 'src/js/components/hello-world-two.jsx',
-    path: '/hello-world-two'
+    path: '/subpath/hello-world-two'
   }
 ];
 
