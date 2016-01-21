@@ -118,13 +118,13 @@ function bundleComponents(opts, context) {
 
 
 function getJsFileName(edef) {
-    var ret = edef.path === '' ? 'index.js' : 'index-' + replaceall(edef.path, '/', '-') + '.js';
+    var ret = edef.path === '' ? 'index.js' : 'index' + replaceall('/', '-', edef.path) + '.js';
     return ret;
 }
 
 
 function getTempFileName(edef) {
-    var ret = edef.path === '' ? 'component.jsx' : 'component-' + replaceall(edef.path, '/', '-') + '.jsx';
+    var ret = edef.path === '' ? 'component.jsx' : 'component' + replaceall('/', '-', edef.path) + '.jsx';
     return ret;
 }
 
