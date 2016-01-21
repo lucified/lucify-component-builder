@@ -3,7 +3,6 @@ var gulp = require('gulp');
 var path = require('path');
 var through2   = require("through2");
 var $ = require('gulp-load-plugins')();
-var browserSync = require('browser-sync');
 var fs = require('fs');
 var mkpath = require('mkpath');
 var del = require('del');
