@@ -24,7 +24,18 @@ var options = parseArgs(process.argv, {default: {
   optimize: false,
   uglify: false,
   dev: true,
-  packagePath: defaultPackagePath}});
+  packagePath: defaultPackagePath,
+  force: false,
+  simulate: false,
+  bucket: null,
+  profile: null
+}});
+
+if (options.profile != null) {
+  console.log("Using AWS profile " + options.profile);
+  process.env['AWS_DEFAULT_PROFILE'] = options.profile;
+}
+
 
 var context = new buildTools.BuildContext(
     options.dev, options.optimize, options.uglify);
@@ -274,10 +285,6 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
-  gulp.task('s3-hashed', buildTools.s3.publishHashedAssets
-    .bind(null, opts.defaultBucket, opts.publishFromFolder, opts.publishToFolder, opts.maxAge));
-  gulp.task('s3-entry-points', buildTools.s3.publishEntryPoints
-    .bind(null, opts.defaultBucket, opts.publishFromFolder, opts.publishToFolder));
 
   var buildTaskNames = [
     'images',
@@ -302,10 +309,17 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('default', gulp.series(
     'set-watch', 'build', 'watch', 'serve'));
 
-  // It is important to do deploy in series to
-  // achieve an "atomic" update. uploading index.html
-  // before hashed assets would be bad -- JOJ
-  gulp.task('s3-deploy', gulp.series('s3-hashed', 's3-entry-points'));
+  //console.log(options)
+  gulp.task('s3-deploy', buildTools.s3.publish
+    .bind(null,
+      buildTools.s3.entryPointStream(opts.publishFromFolder),
+      buildTools.s3.assetStream(opts.publishFromFolder, opts.maxAge),
+      options.bucket || opts.defaultBucket,
+      options.simulate,
+      options.force
+    )
+  )
+
 };
 
 
