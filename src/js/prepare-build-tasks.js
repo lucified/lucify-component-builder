@@ -252,10 +252,11 @@ function prepareSkeleton(cb) {
 }
 
 
-function setupDistBuild() {
+function setupDistBuild(cb) {
   context.dev = false;
   context.destPath = j('dist', context.assetPath);
-  return del('dist/*');
+  del.sync('dist')
+  cb()
 }
 
 
