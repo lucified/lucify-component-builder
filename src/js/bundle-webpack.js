@@ -56,6 +56,7 @@ function bundle(entryPoint, outputFileName, destPath, pageDefs, watch, assetCont
 
   if (watch) {
     devServerBundle(config, destPath);
+    return;
   }
   plainBundle(config, callback);
 }
@@ -94,6 +95,7 @@ function htmlWebpackPluginsFromPageDefs(pageDefs) {
  * Start webpack dev server for given webpack configuration
  */
 function devServerBundle(config, destPath) {
+  config.output.publicPath = '/';
   var compiler = webpack(config);
   new WebpackDevServer(compiler, {
       contentBase: destPath,
