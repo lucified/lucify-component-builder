@@ -132,7 +132,6 @@ function getLoaders() {
         test: /\.(js|jsx)$/,
         loader: 'babel',
         //loaders: ['react-hot', 'babel-loader'],
-        //exclude: ['node_modules'],
         include: [
           process.cwd() + '/src',
           process.cwd() + '/temp',
