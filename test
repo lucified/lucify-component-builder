@@ -1,0 +1,18 @@
+#!/bin/bash
+
+cd test-projects
+
+for i in $( ls ); do
+    cd $i
+    npm install
+    if [ $? != 0 ]; then
+      echo "'npm install' failed for ${i}"
+      exit 1
+    fi
+    npm test
+    if [ $? != 0 ]; then
+      echo "'npm run-script dist' failed for ${i}"
+      exit 1
+    fi
+    cd ..
+done

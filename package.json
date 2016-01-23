@@ -3,8 +3,9 @@
   "version": "0.2.7",
   "description": "Utility for building and publishing convenient distributions of React components",
   "main": "index.js",
+  "engines" : { "node" : ">=4.0.0" },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./test"
   },
   "repository": {
     "type": "git",
@@ -19,7 +20,7 @@
     "gulp-load-plugins": "^0.10.0",
     "gulp-notify": "^2.2.0",
     "gulp-rename": "^1.2.2",
-    "lucify-build-tools": "~0.2.1",
+    "lucify-build-tools": "~0.3.0",
     "lucify-commons": "~0.2.3",
     "merge-stream": "^1.0.0",
     "minimist": "^1.2.0",
