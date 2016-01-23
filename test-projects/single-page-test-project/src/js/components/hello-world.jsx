@@ -6,6 +6,14 @@ var NiceSlider = require('lucify-commons/src/js/components/nice-slider.jsx');
 
 var assets = require('lucify-commons/src/js/lucify-assets.js');
 
+var url20e = require('../../images/50euro.jpg');
+var url50e = require('../../../temp/generated-images/20euro.jpg');
+
+var url100e = require('module1/src/images/100euro.jpg');
+var url200e = require('module1/temp/generated-images/200euro.jpg');
+
+require('../../scss/styles.scss');
+
 
 var HelloWorld = React.createClass({
 
@@ -26,20 +34,20 @@ var HelloWorld = React.createClass({
                 <div>
                   <h4>Images from project</h4>
                   <p>50 euro image from src/images/</p>
-                  <img src={assets.img('50euro.jpg')} style={{width: "100%"}} />
+                  <img src={url20e} style={{width: "100%"}} />
 
                   <p>20 euro image from temp/generated-images/</p>
-                  <img src={assets.img('20euro.jpg')} style={{width: "100%"}} />
+                  <img src={url50e} style={{width: "100%"}} />
                 </div>
               }
               second={
                 <div>
                   <h4>Images from dependencies</h4>
                   <p>100 euro image from test_modules/module1/src/images/</p>
-                  <img src={assets.img('100euro.jpg')} style={{width: "100%"}} />
+                  <img src={url100e} style={{width: "100%"}} />
 
                   <p>200 euro image from test_modules/module1/temp/generated-images/</p>
-                  <img src={assets.img('200euro.jpg')} style={{width: "100%"}} />
+                  <img src={url200e} style={{width: "100%"}} />
                 </div>
               } />
 

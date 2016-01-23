@@ -1,28 +1,32 @@
 
-@import '../../node_modules/lucify-commons/src/scss/styles-full.scss';
+:global {
+  @import '~lucify-commons/src/scss/styles-full.scss';
 
-.hello-world {
+  .hello-world {
 
-  h2 {
-    font-size: 2.0rem;
-    font-weight: normal;
-    margin-bottom: 1.8rem;
-  }
+    h2 {
+      font-size: 2.0rem;
+      font-weight: normal;
+      margin-bottom: 1.8rem;
+    }
 
-  h3 {
-    font-size: 1.6rem;
-    font-weight: normal;
-    margin-bottom: 1.2rem;
-    margin-top: 1.2rem;
-  }
+    h3 {
+      font-size: 1.6rem;
+      font-weight: normal;
+      margin-bottom: 1.2rem;
+      margin-top: 1.2rem;
+    }
 
-  h4 {
-    font-size: 1.0rem;
-    font-weight: normal;
-  }
+    h4 {
+      font-size: 1.0rem;
+      font-weight: normal;
+    }
 
-  p {
-    @include lucify-medium-paragraph()
+    p {
+      @include lucify-medium-paragraph()
+    }
+
   }
 
 }
+
