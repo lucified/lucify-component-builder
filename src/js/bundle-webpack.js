@@ -113,7 +113,10 @@ function devServerBundle(config, destPath) {
  */
 function plainBundle(config, callback) {
   webpack(config, function(err, stats) {
-      if(err) throw new gutil.PluginError("webpack", err);
+      if (err) {
+        gutil.log("[webpack]", err);
+        process.exit(1);
+      }
       gutil.log("[webpack]", stats.toString({chunks: false}));
       callback();
   });
