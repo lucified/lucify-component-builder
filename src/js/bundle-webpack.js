@@ -96,7 +96,9 @@ function htmlWebpackPluginsFromPageDefs(pageDefs) {
 function devServerBundle(config, destPath) {
   var compiler = webpack(config);
   new WebpackDevServer(compiler, {
-      contentBase: destPath
+      contentBase: destPath,
+      noInfo: true
+
         // server and middleware options
   }).listen(3000, "localhost", function(err) {
         if(err) throw new gutil.PluginError("webpack-dev-server", err);
