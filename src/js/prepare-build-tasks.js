@@ -21,13 +21,16 @@ var src  = gulp.src;
 var dest = gulp.dest;
 var j = path.join;
 
-var defaultPackagePath = j('node_modules', 'lucify-component-builder');
+
+//
+// Detect options and prepare build context accordingly
+// ----------------------------------------------------
+//
 
 var options = parseArgs(process.argv, {default: {
   optimize: false,
   uglify: false,
   dev: true,
-  packagePath: defaultPackagePath,
   force: false,
   simulate: false,
   bucket: null,
@@ -38,9 +41,6 @@ if (options.profile != null) {
   console.log("Using AWS profile " + options.profile);
   process.env['AWS_DEFAULT_PROFILE'] = options.profile;
 }
-
-
-var packagePath = options.packagePath;
 
 var context = new buildTools.BuildContext(
     options.dev, options.optimize, options.uglify);
@@ -94,14 +94,15 @@ var createJsxAndBundlePromisified = Promise.promisify(createJsxAndBundle);
  */
 function generateJSX(reactRouter, componentPath, tempFileName) {
   var bootstrapper = reactRouter === true ? 'bootstrap-react-router-component' : 'bootstrap-component';
-  var template = fs.readFileSync(j(packagePath, 'src', 'js', 'react-bootstrap', 'component-template.jsx'), 'utf8');
+  var templateFile = require.resolve('./react-bootstrap/component-template.jsx');
+  var template = fs.readFileSync(templateFile, 'utf8');
   var data = template.replace('%REPLACE%', componentPath)
     .replace('%BOOTSTRAPPER%', bootstrapper);
-
   var destpath = "temp/";
   mkpath.sync(destpath);
   fs.writeFileSync(destpath + tempFileName, data);
-  return src(j(packagePath, 'src', 'js', 'react-bootstrap', '*.jsx'))
+  var srcPath = j(__dirname, 'react-bootstrap', '*.jsx');
+  return src(srcPath)
     .pipe(dest(destpath));
 }
 
@@ -156,7 +157,7 @@ function bundleComponents(opts, context, callback) {
  * (which is the same for different components)
  */
 function bundleEmbedBootstrap(context, assetContext, callback) {
-  var entryPoint = j('lucify-component-builder', 'src', 'js', 'entry-points', 'embed.jsx');
+  var entryPoint = require.resolve('./entry-points/embed.jsx');
   var outputFileName = 'embed.js';
   var destPath = context.destPath;
   var pageDefs = null;
@@ -168,7 +169,7 @@ function bundleEmbedBootstrap(context, assetContext, callback) {
  * Bundle code for resizing embedded iFrame
  */
 function bundleResize(context, assetContext, callback) {
-  var entryPoint = j('lucify-component-builder', 'src', 'js', 'entry-points', 'resize.jsx');
+  var entryPoint = require.resolve('./entry-points/resize.jsx');
   var outputFileName = 'resize.js';
   var destPath = context.destPath;
   var pageDefs = null;
@@ -214,7 +215,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('bundle-components', bundleComponents.bind(null, opts, context));
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap.bind(null, context, opts.assetContext));
   gulp.task('bundle-resize', bundleResize.bind(null, context, opts.assetContext));
-  gulp.task('embed-codes', embedCodeUtils.embedCodes.bind(null, context, opts, packagePath));
+  gulp.task('embed-codes', embedCodeUtils.embedCodes.bind(null, context, opts));
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
 

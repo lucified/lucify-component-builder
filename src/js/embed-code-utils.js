@@ -11,20 +11,20 @@ var src  = gulp.src;
 var dest = gulp.dest;
 
 
-function embedCodes(context, opts, packagePath) {
+function embedCodes(context, opts) {
   if (Array.isArray(opts.embedDefs)) {
       return mergeStream(opts.embedDefs.map(function(def) {
-        return embedCodesPage(context, opts.baseUrl, opts.assetContext, def.path, packagePath);
+        return embedCodesPage(context, opts.baseUrl, opts.assetContext, def.path);
       }));
   }
-  return embedCodesPage(context, opts.baseUrl, opts.assetContext, '', packagePath);
+  return embedCodesPage(context, opts.baseUrl, opts.assetContext, '');
 }
 
 
 /*
  * Generate embed codes
  */
-function embedCodesPage(context, baseUrl, assetContext, path, packagePath) {
+function embedCodesPage(context, baseUrl, assetContext, path) {
 
   // if baseUrl is not defined, this is not
   // intended to be embeddable, and there is
@@ -39,7 +39,9 @@ function embedCodesPage(context, baseUrl, assetContext, path, packagePath) {
   var embedUrl = context.dev ? ("http://localhost:3000/" + urlPath) : baseUrl + assetContext + urlPath;
   var baseUrl = context.dev ? ("http://localhost:3000/") : baseUrl + assetContext;
 
-  return src(j(packagePath, 'src', 'www', 'embed-codes.hbs'))
+  var templatePath = require.resolve('../../src/www/embed-codes.hbs');
+
+  return src(templatePath)
     .pipe(through2.obj(function(file, enc, _cb) {
       var params = {
         scriptTagEmbedCode: embedCode.getScriptTagEmbedCode(baseUrl, embedUrl),
