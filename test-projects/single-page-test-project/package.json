@@ -1,6 +1,5 @@
-
 {
-  "name": "embed-test-project",
+  "name": "single-page-test-project",
   "version": "0.0.1",
   "description": "Test project for lucify-component-builder",
   "main": "gulpfile.js",
