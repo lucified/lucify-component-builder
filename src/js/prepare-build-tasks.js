@@ -190,11 +190,11 @@ function prepareSkeleton(cb) {
 /*
  * Setup a distribution build
  */
-function setupDistBuild() {
+function setupDistBuild(cb) {
   context.dev = false;
   context.destPath = j('dist', context.assetPath);
-  del.sync('dist')
-  cb()
+  del.sync('dist');
+  cb();
 }
 
 
