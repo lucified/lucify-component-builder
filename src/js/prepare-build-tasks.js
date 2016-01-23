@@ -3,13 +3,13 @@ var gulp = require('gulp');
 var path = require('path');
 var through2   = require("through2");
 var $ = require('gulp-load-plugins')();
-var browserSync = require('browser-sync');
 var fs = require('fs');
 var mkpath = require('mkpath');
 var del = require('del');
 var parseArgs = require('minimist');
 var deepcopy = require('deepcopy');
 var mergeStream = require('merge-stream');
+var replaceall = require("replaceall");
 
 var buildTools = require('lucify-build-tools');
 var embedCode = require('lucify-commons/src/js/embed-code.js');
@@ -41,6 +41,11 @@ var context = new buildTools.BuildContext(
     options.dev, options.optimize, options.uglify);
 
 var packagePath = options.packagePath;
+
+
+String.prototype.endsWith = function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};
 
 
 function html(context, opts, baseUrl, assetContext) {
@@ -77,7 +82,6 @@ function htmlForPage(context, pageDef, baseUrl, assetContext, rootRef) {
   var def;
   if (pageDef != null) {
     def = deepcopy(pageDef);
-    def.url = baseUrl + assetContext;
     setImageUrl(def, 'twitterImage');
     setImageUrl(def, 'openGraphImage');
     setImageUrl(def, 'schemaImage');
@@ -90,6 +94,11 @@ function htmlForPage(context, pageDef, baseUrl, assetContext, rootRef) {
 
   // default subpath by default
   def.path = def.path != null ? def.path : '';
+  def.url = baseUrl + assetContext + def.path.replace('/', '');
+
+  if (!def.url.endsWith('/')) {
+    def.url = def.url + "/";
+  }
 
   // by default, google analytics, riveted, etc are enabled
   def.googleAnalytics = def.googleAnalytics === false ? false : true;
@@ -128,13 +137,13 @@ function bundleComponents(opts, context) {
 
 
 function getJsFileName(edef) {
-    var ret = edef.path === '' ? 'index.js' : 'index' + edef.path.replace('/', '-') + '.js';
+    var ret = edef.path === '' ? 'index.js' : 'index' + replaceall('/', '-', edef.path) + '.js';
     return ret;
 }
 
 
 function getTempFileName(edef) {
-    var ret = edef.path === '' ? 'component.jsx' : 'component' + edef.path.replace('/', '-') + '.jsx';
+    var ret = edef.path === '' ? 'component.jsx' : 'component' + replaceall('/', '-', edef.path) + '.jsx';
     return ret;
 }
 
