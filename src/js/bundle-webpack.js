@@ -89,7 +89,7 @@ function htmlWebpackPluginsFromPageDefs(pageDefs, watch) {
           item.path = '';
         }
         var config = {
-            template: 'node_modules/lucify-component-builder/src/www/embed.hbs',
+            template: require.resolve('lucify-component-builder/src/www/embed.hbs'),
             inject: false,
             filename: path.join(item.path, 'index.html'),
             devServer: watch // note: this is also needed for hot module replacement
