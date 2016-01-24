@@ -40,15 +40,13 @@ function bundle(entryPoint, outputFileName, destPath, pageDefs, watch, assetCont
 
   var config = {
      resolve: {
-       modulesDirectories: ['node_modules', 'components'],
-       root: [path.resolve(__dirname,'../node_modules')]
+       modulesDirectories: ['node_modules'],
      },
      module: {
        loaders: getLoaders()
      },
      resolveLoader: {
       root: [path.resolve(__dirname, '../node_modules')],
-      modulesDirectories: ['node_modules'],
      },
      output: {
       filename: outputFileName,
