@@ -12,7 +12,7 @@ var url50e = require('../../../temp/generated-images/20euro.jpg');
 var url100e = require('module1/src/images/100euro.jpg');
 var url200e = require('module1/temp/generated-images/200euro.jpg');
 
-require('../../scss/styles.scss');
+var styles = require('../../scss/styles.scss');
 
 
 var HelloWorld = React.createClass({
@@ -20,7 +20,7 @@ var HelloWorld = React.createClass({
   render: function() {
 
     return (
-      <div className="hello-world">
+      <div className={styles['hello-world']}>
 
         <div className="inputs">
           <div className="lucify-container">
