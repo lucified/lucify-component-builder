@@ -55,6 +55,11 @@ function bundle(entryPoint, outputFileName, destPath, pageDefs, watch, assetCont
      },
      entry: entryPoint,
      plugins: htmlWebpackPluginsFromPageDefs(pageDefs, watch),
+     // enabling watch here seems to fix a weird problem where
+     // the bundle would seemingly randomly be built incorrectly
+     // when using the webpack-dev-server, resulting in TypeError
+     // for embed-decorator in the browser console
+     watch: watch
   };
 
   if (watch) {
