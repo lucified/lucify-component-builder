@@ -14,6 +14,12 @@ var dest = gulp.dest;
 var webpack = require('webpack'),
 path = require('path');
 
+var parseArgs = require('minimist');
+
+var options = parseArgs(process.argv, {default: {
+  hot: false
+}});
+
 
 /*
  *  Bundle a component
@@ -86,7 +92,7 @@ function htmlWebpackPluginsFromPageDefs(pageDefs, watch) {
             template: 'node_modules/lucify-component-builder/src/www/embed.hbs',
             inject: false,
             filename: path.join(item.path, 'index.html'),
-            devServer: watch
+            devServer: watch // note: this is also needed for hot module replacement
         };
         var fullConfig = extend(config, item);
         return new HtmlWebpackPlugin(fullConfig);
@@ -100,9 +106,27 @@ function htmlWebpackPluginsFromPageDefs(pageDefs, watch) {
 function devServerBundle(config, destPath) {
   config.output.publicPath = '/';
 
-  // setup for automatic refresh
-  // https://webpack.github.io/docs/webpack-dev-server.html#automatic-refresh
-  config.entry = ['webpack-dev-server/client?http://localhost:3000', config.entry];
+  if (!options.hot) {
+    // setup for automatic refresh
+    // https://webpack.github.io/docs/webpack-dev-server.html#automatic-refresh
+    config.entry = ['webpack-dev-server/client?http://localhost:3000', config.entry];
+
+  } else {
+    // Experimental setup for hot module replacement
+    // enable via --hot option
+    //
+    // This seems to work correctly, but we get a message that
+    // some modules could not be updated, as they would need a
+    // full reload. I suspect this is related to the use of higher-order
+    // components.
+    //
+    // https://medium.com/@dan_abramov/the-death-of-react-hot-loader-765fa791d7c4#.wrqoafdic
+    // https://gaearon.github.io/react-hot-loader/getstarted/
+    // https://webpack.github.io/docs/hot-module-replacement-with-webpack.html
+    config.entry = [config.entry, 'webpack/hot/only-dev-server'];
+    config.plugins.push(new webpack.HotModuleReplacementPlugin());
+  }
+
   var compiler = webpack(config);
   new WebpackDevServer(compiler, {
       contentBase: destPath,
