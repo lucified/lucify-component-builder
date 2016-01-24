@@ -131,6 +131,7 @@ function devServerBundle(config, destPath) {
   new WebpackDevServer(compiler, {
       contentBase: destPath,
       noInfo: true
+      hot: options.hot,
       colors: true
   }).listen(3000, "localhost", function(err) {
         if(err) {
