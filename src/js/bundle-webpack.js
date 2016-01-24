@@ -50,7 +50,7 @@ function bundle(entryPoint, outputFileName, destPath, pageDefs, watch, assetCont
       publicPath: '/' + assetContext
      },
      entry: entryPoint,
-     plugins: htmlWebpackPluginsFromPageDefs(pageDefs),
+     plugins: htmlWebpackPluginsFromPageDefs(pageDefs, watch),
   };
 
   if (watch) {
@@ -70,7 +70,7 @@ function bundle(entryPoint, outputFileName, destPath, pageDefs, watch, assetCont
  * Create HtmlWebpack plugin entries
  * based on given page defs
  */
-function htmlWebpackPluginsFromPageDefs(pageDefs) {
+function htmlWebpackPluginsFromPageDefs(pageDefs, watch) {
     var arr;
     if (Array.isArray(pageDefs)) {
       arr = pageDefs;
@@ -84,8 +84,9 @@ function htmlWebpackPluginsFromPageDefs(pageDefs) {
         }
         var config = {
             template: 'node_modules/lucify-component-builder/src/www/embed.hbs',
-            inject: 'body',
-            filename: path.join(item.path, 'index.html')
+            inject: false,
+            filename: path.join(item.path, 'index.html'),
+            devServer: watch
         };
         var fullConfig = extend(config, item);
         return new HtmlWebpackPlugin(fullConfig);
@@ -98,6 +99,10 @@ function htmlWebpackPluginsFromPageDefs(pageDefs) {
  */
 function devServerBundle(config, destPath) {
   config.output.publicPath = '/';
+
+  // setup for automatic refresh
+  // https://webpack.github.io/docs/webpack-dev-server.html#automatic-refresh
+  config.entry = ['webpack-dev-server/client?http://localhost:3000', config.entry];
   var compiler = webpack(config);
   new WebpackDevServer(compiler, {
       contentBase: destPath,
