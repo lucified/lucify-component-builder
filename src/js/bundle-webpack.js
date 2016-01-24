@@ -33,7 +33,6 @@ path = require('path');
 function bundle(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, callback) {
 
   var config = {
-     noInfo: false,
      resolve: {
        modulesDirectories: ['node_modules', 'components'],
        root: [path.resolve(__dirname,'../node_modules')]
