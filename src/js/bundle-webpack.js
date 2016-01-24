@@ -90,7 +90,10 @@ function htmlWebpackPluginsFromPageDefs(pageDefs, watch) {
             template: require.resolve('lucify-component-builder/src/www/embed.hbs'),
             inject: false,
             filename: path.join(item.path, 'index.html'),
-            devServer: watch // note: this is also needed for hot module replacement
+
+            // this enables a script tag for automatic refresh
+            // https://webpack.github.io/docs/webpack-dev-server.html#automatic-refresh
+            devServer: watch
         };
         var fullConfig = extend(config, item);
         return new HtmlWebpackPlugin(fullConfig);
@@ -104,12 +107,7 @@ function htmlWebpackPluginsFromPageDefs(pageDefs, watch) {
 function devServerBundle(config, destPath) {
   config.output.publicPath = '/';
 
-  if (!options.hot) {
-    // setup for automatic refresh
-    // https://webpack.github.io/docs/webpack-dev-server.html#automatic-refresh
-    config.entry = ['webpack-dev-server/client?http://localhost:3000', config.entry];
-
-  } else {
+  if (options.hot) {
     // Experimental setup for hot module replacement
     // enable via --hot option
     //
