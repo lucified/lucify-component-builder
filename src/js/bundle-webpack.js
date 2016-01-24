@@ -132,7 +132,9 @@ function devServerBundle(config, destPath) {
       contentBase: destPath,
       noInfo: true
   }).listen(3000, "localhost", function(err) {
-        if(err) throw new gutil.PluginError("webpack-dev-server", err);
+        if(err) {
+          throw new gutil.PluginError("webpack-dev-server", err);
+        }
         // keep the server alive or continue?
         // callback();
   });
