@@ -148,9 +148,12 @@ var riveted=function(){function e(e){e=e||{},g=parseInt(e.reportInterval,10)||5,
   </script>
 {{/if}}
 
-<!--
 <script src="{{{htmlWebpackPlugin.files.chunks.main.entry}}}"></script>
--->
+
+{{#if htmlWebpackPlugin.options.devServer}}
+<script src="http://localhost:3000/webpack-dev-server.js"></script>
+{{/if}}
+
 
 </body>
 
