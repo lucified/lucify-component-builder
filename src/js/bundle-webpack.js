@@ -107,8 +107,6 @@ function devServerBundle(config, destPath) {
   new WebpackDevServer(compiler, {
       contentBase: destPath,
       noInfo: true
-
-        // server and middleware options
   }).listen(3000, "localhost", function(err) {
         if(err) throw new gutil.PluginError("webpack-dev-server", err);
         // keep the server alive or continue?
