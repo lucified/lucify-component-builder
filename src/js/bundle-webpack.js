@@ -35,15 +35,26 @@ var options = parseArgs(process.argv, {default: {
  *                      if no index.html:s need to be generated)
  *  watch             - start webpack-dev-server with hot reloading
  *                      setting this true will cause this to block
+ *  babelPaths        - paths for which .js and .jsx files should be
+ *                      run through babel-loader. this options is at
+ *                      least needed for backwards compatiblity for some time
  */
-function bundle(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, callback) {
+function bundle(
+    entryPoint,
+    outputFileName,
+    destPath,
+    pageDefs,
+    watch,
+    assetContext,
+    babelPaths,
+    callback) {
 
   var config = {
      resolve: {
        modulesDirectories: ['node_modules'],
      },
      module: {
-       loaders: getLoaders()
+       loaders: getLoaders(babelPaths)
      },
      resolveLoader: {
       root: [path.resolve(__dirname, '../node_modules')],
@@ -131,7 +142,7 @@ function devServerBundle(config, destPath) {
   var compiler = webpack(config);
   new WebpackDevServer(compiler, {
       contentBase: destPath,
-      noInfo: true
+      noInfo: false,
       hot: options.hot,
       colors: true
   }).listen(3000, "localhost", function(err) {
@@ -162,7 +173,12 @@ function plainBundle(config, callback) {
 /*
  * Get the webpack loaders object for the webpack configuration
  */
-function getLoaders() {
+function getLoaders(babelPaths) {
+
+  if (!babelPaths) {
+    babelPaths = [];
+  }
+
   return [
       {
         test: /\.(js|jsx)$/,
@@ -171,8 +187,7 @@ function getLoaders() {
         include: [
           process.cwd() + '/src',
           process.cwd() + '/temp',
-          process.cwd() + '/node_modules/lucify-commons/src' // TODO
-        ],
+        ].concat(babelPaths),
         query: {
           presets: [
             // https://github.com/babel/babel-loader/issues/166

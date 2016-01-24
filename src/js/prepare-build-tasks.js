@@ -72,7 +72,7 @@ String.prototype.endsWith = function(suffix) {
  * watch         -- start watching with webback-dev-server
  *
  */
-function createJsxAndBundle(destPath, componentPath, reactRouter, pageDefs, watch, assetContext, callback) {
+function createJsxAndBundle(destPath, componentPath, reactRouter, pageDefs, watch, assetContext, babelPaths, callback) {
   var tempFileName = getTempFileName(componentPath);
   generateJSX(reactRouter, componentPath, tempFileName);
   var entryPoint = './temp/' + tempFileName;
@@ -83,6 +83,7 @@ function createJsxAndBundle(destPath, componentPath, reactRouter, pageDefs, watc
       pageDefs,
       watch,
       assetContext,
+      babelPaths,
       callback);
 }
 var createJsxAndBundlePromisified = Promise.promisify(createJsxAndBundle);
@@ -124,7 +125,7 @@ function bundleComponents(opts, context, callback) {
     var watch = context.dev; // TODO
     var componentPath = 'index.js';
     createJsxAndBundle(context.destPath, componentPath,
-      opts.reactRouter, pageDefs, watch, opts.assetContext, callback);
+      opts.reactRouter, pageDefs, watch, opts.assetContext, opts.babelPaths, callback);
     return;
   };
 
@@ -162,7 +163,7 @@ function bundleEmbedBootstrap(context, assetContext, callback) {
   var destPath = context.destPath;
   var pageDefs = null;
   var watch = false;
-  return bundleWebpack(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, callback);
+  return bundleWebpack(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, null, callback);
 }
 
 /*
@@ -174,7 +175,7 @@ function bundleResize(context, assetContext, callback) {
   var destPath = context.destPath;
   var pageDefs = null;
   var watch = false;
-  return bundleWebpack(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, callback);
+  return bundleWebpack(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, null, callback);
 }
 
 /*

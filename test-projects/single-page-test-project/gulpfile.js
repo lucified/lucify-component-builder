@@ -1,6 +1,5 @@
 
 var gulp = require('gulp');
-
 var template = require('lucify-commons/src/js/lucify-page-def-template.js');
 
 var opts = {
@@ -15,7 +14,7 @@ var opts = {
   }),
 
   iFrameResize: false,
-  paths: ['node_modules/lucify-commons', 'test_modules/module1'],
+  babelPaths: require.resolve('lucify-commons').replace('index.js', 'src'),
   publishFromFolder: 'dist',
   defaultBucket: 'lucify-dev',
   maxAge: 3600,
