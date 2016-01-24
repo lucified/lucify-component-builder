@@ -80,10 +80,13 @@ function htmlWebpackPluginsFromPageDefs(pageDefs) {
     }
 
     return arr.map(item => {
+        if (!item.path) {
+          item.path = '';
+        }
         var config = {
             template: 'node_modules/lucify-component-builder/src/www/embed.hbs',
             inject: 'body',
-            filename: item.path + '/index.html'
+            filename: path.join(item.path, 'index.html')
         };
         var fullConfig = extend(config, item);
         return new HtmlWebpackPlugin(fullConfig);
