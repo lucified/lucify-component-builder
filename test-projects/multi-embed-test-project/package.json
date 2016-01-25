@@ -4,6 +4,11 @@
   "version": "0.0.1",
   "description": "Test project for lucify-component-builder",
   "main": "gulpfile.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lucified/lucify-component-builder.git"
+  },
   "scripts": {
     "start": "gulp",
     "test": "gulp dist",
