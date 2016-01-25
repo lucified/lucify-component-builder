@@ -182,7 +182,7 @@ function getLoaders(babelPaths) {
   return [
       {
         test: /\.(js|jsx)$/,
-        loader: 'babel',
+        loader: require.resolve('babel-loader'),
         //loaders: ['react-hot', 'babel-loader'],
         include: [
           process.cwd() + '/src',
@@ -200,26 +200,32 @@ function getLoaders(babelPaths) {
       {
         test: /\.css$/,
         loaders: [
-          'style-loader',
-          'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
-          'postcss-loader'
+          require.resolve('style-loader'),
+          require.resolve('css-loader') + "?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]",
+          require.resolve('postcss-loader')
+          //'style-loader',
+          //'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
+          //'postcss-loader'
         ]
       },
       {
         test: /\.svg$/,
-        loader: 'url-loader?limit=10000&mimetype=image/svg+xml'
+        loader: require.resolve('url-loader') + "?limit=10000&mimetype=image/svg+xml"
       },
       {
         test: /\.scss$/,
-        loaders: ["style", "css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]", "sass"]
+        loaders: [
+          require.resolve('style-loader'),
+          require.resolve('css-loader') + "?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]",
+          require.resolve('sass-loader')]
       },
       {
         test: /\.(jpeg|jpg|gif|png|json)$/,
-        loaders: ["file-loader?name=[name]-[hash:12].[ext]"]
+        loaders: [require.resolve('file-loader') + "?name=[name]-[hash:12].[ext]"]
       },
       {
         test: /\.hbs$/,
-        loader: "handlebars"
+        loader: require.resolve('handlebars-loader')
       }
   ];
 }
