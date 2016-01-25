@@ -2,7 +2,7 @@
 var gulp = require('gulp');
 
 var opts = {
-  paths: ['node_modules/lucify-commons', 'test_modules/module1'],
+  babelPaths: [require.resolve('lucify-commons').replace('index.js', 'src')],
   publishFromFolder: 'dist',
   assetContext: 'embed/hello-world/',
 }
