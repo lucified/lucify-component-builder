@@ -142,7 +142,7 @@ function bundleComponents(opts, context, callback) {
     var pageDef = pageDefUtils.enrichPageDef(edef, opts.baseUrl, opts.assetContext);
     pageDef.path = '';
     return createJsxAndBundlePromisified(destPath, edef.componentPath,
-      opts.reactRouter, [pageDef], watch, opts.assetContext + edef.path.substring(1));
+      opts.reactRouter, [pageDef], watch, opts.assetContext + edef.path.substring(1) + '/', opts.babelPaths);
   });
   return Promise.all(promises).then(function() {
     callback();
