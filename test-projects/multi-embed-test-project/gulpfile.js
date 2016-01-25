@@ -1,4 +1,7 @@
 
+// Note that currently only dist builds work correctly
+// for multi-embed -projects
+
 var gulp = require('gulp');
 
 var embedDefs = [
@@ -15,7 +18,7 @@ var embedDefs = [
 
 var opts = {
   embedDefs: embedDefs,
-  paths: ['node_modules/lucify-commons', 'test_modules/module1'],
+  babelPaths: [require.resolve('lucify-commons').replace('index.js', 'src')],
   publishFromFolder: 'dist',
   defaultBucket: 'lucify-dev',
   maxAge: 3600,
