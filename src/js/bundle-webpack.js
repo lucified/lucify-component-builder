@@ -198,17 +198,6 @@ function getLoaders(babelPaths) {
         }
       },
       {
-        test: /\.css$/,
-        loaders: [
-          require.resolve('style-loader'),
-          require.resolve('css-loader') + "?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]",
-          require.resolve('postcss-loader')
-          //'style-loader',
-          //'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
-          //'postcss-loader'
-        ]
-      },
-      {
         test: /\.svg$/,
         loader: require.resolve('url-loader') + "?limit=10000&mimetype=image/svg+xml"
       },
