@@ -4,8 +4,6 @@ var React = require('react');
 var DividedCols = require('lucify-commons/src/js/components/divided-cols.jsx');
 var NiceSlider = require('lucify-commons/src/js/components/nice-slider.jsx');
 
-var assets = require('lucify-commons/src/js/lucify-assets.js');
-
 var url20e = require('../../images/50euro.jpg');
 var url50e = require('../../../temp/generated-images/20euro.jpg');
 
