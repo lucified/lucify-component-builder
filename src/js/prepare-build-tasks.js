@@ -166,7 +166,7 @@ function bundleComponents(opts, context, assetContext, callback) {
     var pageDef = pageDefUtils.enrichPageDef(edef, opts.baseUrl, assetContext);
     pageDef.path = '';
     return createJsxAndBundlePromisified(destPath, edef.componentPath,
-      opts.reactRouter, [pageDef], watch, assetContext + edef.path.substring(1));
+      opts.reactRouter, [pageDef], watch, assetContext + edef.path.substring(1) + '/', opts.babelPaths);
   });
 
   return Promise.all(promises).then(function() {
