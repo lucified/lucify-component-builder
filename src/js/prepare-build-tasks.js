@@ -94,7 +94,10 @@ var createJsxAndBundlePromisified = Promise.promisify(createJsxAndBundle);
  * component at given path as an embeddable component
  */
 function generateJSX(reactRouter, componentPath, tempFileName) {
-  var bootstrapper = reactRouter === true ? 'bootstrap-react-router-component' : 'bootstrap-component';
+  var bootstrapper = require.resolve('./react-bootstrap/bootstrap-component.jsx');
+  if (reactRouter) {
+    bootstrapper = require.resolve('./react-bootstrap/bootstrap-react-router-component.jsx');
+  }
   var templateFile = require.resolve('./react-bootstrap/component-template.jsx');
   var template = fs.readFileSync(templateFile, 'utf8');
   var data = template.replace('%REPLACE%', componentPath)
@@ -102,11 +105,7 @@ function generateJSX(reactRouter, componentPath, tempFileName) {
   var destpath = "temp/";
   mkpath.sync(destpath);
   fs.writeFileSync(destpath + tempFileName, data);
-  var srcPath = j(__dirname, 'react-bootstrap', '*.jsx');
-  return src(srcPath)
-    .pipe(dest(destpath));
 }
-
 
 
 //

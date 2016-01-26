@@ -187,6 +187,7 @@ function getLoaders(babelPaths) {
         include: [
           process.cwd() + '/src',
           process.cwd() + '/temp',
+          __dirname
         ].concat(babelPaths),
         query: {
           presets: [
