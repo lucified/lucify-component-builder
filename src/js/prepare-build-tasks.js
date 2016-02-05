@@ -10,10 +10,15 @@ var parseArgs = require('minimist');
 var deepcopy = require('deepcopy');
 var mergeStream = require('merge-stream');
 var replaceall = require("replaceall");
+var extend = require('object-extend');
+var request = require('request');
 var git = require('git-rev-sync');
 
 var buildTools = require('lucify-build-tools');
 var embedCode = require('lucify-commons/src/js/embed-code.js');
+
+var deployOptions = require('./deploy-options.js');
+
 
 var src  = gulp.src;
 var dest = gulp.dest;
@@ -271,6 +276,7 @@ function notify(opts, cb) {
     var project = opts.deployOptions.getProject(opts);
     var buildType = getBuildType();
     var distUrl = getFullDistUrl(opts);
+    var gitMessage = git.message();
 
     var options = {
       url: `https://api.flowdock.com/v1/messages/team_inbox/${process.env.FLOW_TOKEN}`,
@@ -299,6 +305,34 @@ function notify(opts, cb) {
       cb()
     });
 }
+
+
+function getBuildType() {
+  return process.env.NODE_ENV ? process.env.NODE_ENV : "dev";
+}
+
+
+function getDeployOptionsForTarget(opts) {
+  return opts.deployOptions.targets[getBuildType()];
+}
+
+
+function getFullDistUrl(opts) {
+  var to = getDeployOptionsForTarget(opts);
+  return to.baseUrl + to.getAssetContext(opts);
+}
+
+
+function getBucketForDistBuild(opts) {
+  return getDeployOptionsForTarget(opts).bucket;
+}
+
+
+function prepareDeployOptions(opts) {
+    if (!opts.deployOptions) {
+        opts.deployOptions = deployOptions;
+    }
+    opts.deployOptions = extend(deployOptions, opts.deployOptions);
 }
 
 
@@ -306,6 +340,18 @@ var prepareBuildTasks = function(gulp, opts) {
   if (!opts) {
       opts = {};
   }
+
+  prepareDeployOptions(opts);
+
+  if (!getDeployOptionsForTarget(opts)) {
+      console.log("Error: No deploy options found for target '" + getBuildType() + "'");
+      console.log(opts);
+      process.exit(1);
+  }
+
+
+  opts.assetContext = getDeployOptionsForTarget(opts).getAssetContext(opts);
+  opts.baseUrl = getDeployOptionsForTarget(opts).baseUrl;
 
   context.assetPath = !opts.assetContext ? "" : opts.assetContext;
 
@@ -358,7 +404,7 @@ var prepareBuildTasks = function(gulp, opts) {
     .bind(null,
       buildTools.s3.entryPointStream(opts.publishFromFolder),
       buildTools.s3.assetStream(opts.publishFromFolder, opts.maxAge),
-      options.bucket || opts.defaultBucket,
+      getBucketForDistBuild(opts),
       options.simulate,
       options.force
     )
