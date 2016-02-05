@@ -4,6 +4,7 @@ var gulp = require('gulp');
 var template = require('lucify-commons/src/js/lucify-page-def-template.js');
 
 var opts = {
+  project: 'single-page-test-project',
 
   pageDef: template.apply({
     title: "Hello World Title",
