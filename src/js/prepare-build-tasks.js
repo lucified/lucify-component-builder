@@ -266,6 +266,38 @@ function setupDistBuild(cb) {
   context.destPath = j('dist', context.assetPath);
   del.sync('dist')
   cb()
+function notify(opts, cb) {
+    var project = opts.deployOptions.getProject(opts);
+    var buildType = getBuildType();
+    var distUrl = getFullDistUrl(opts);
+
+    var options = {
+      url: `https://api.flowdock.com/v1/messages/team_inbox/${process.env.FLOW_TOKEN}`,
+      method: 'POST',
+      json: true,
+      body: {
+        "source": "CircleCI",
+        //"from_name": "Mr. Robot",
+        "from_address": "deploy@lucify.com",
+        "subject": `Deployed ${project} to ${buildType}`,
+        "content": `See ${distUrl}`,
+        "project": project,
+        "tags":  ["#deployment", `#${process.env.NODE_ENV || 'development'}`]
+      }
+    }
+    request(options, (error, res, body) => {
+      if(error) {
+        console.log(error)
+        return cb()
+      }
+      if(res.statusCode != 200) {
+        console.log(`STATUS: ${res.statusCode}`);
+        console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+        console.log(`BODY: ${JSON.stringify(body)}`);
+      }
+      cb()
+    });
+}
 }
 
 
@@ -295,6 +327,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
+  gulp.task('notify', notify.bind(null, opts));
 
   var buildTaskNames = [
     'images',
@@ -329,6 +362,7 @@ var prepareBuildTasks = function(gulp, opts) {
       options.force
     )
   )
+  gulp.task('s3-deployandnotify', gulp.series('s3-deploy', 'notify'))
 
 };
 
