@@ -265,8 +265,8 @@ function prepareSkeleton(cb) {
 function setupDistBuild(cb) {
   context.dev = false;
   context.destPath = j('dist', context.assetPath);
-  del.sync('dist')
-  cb()
+  del.sync('dist');
+  cb();
 function notify(opts, cb) {
     var project = opts.deployOptions.getProject(opts);
     var buildType = getBuildType();
