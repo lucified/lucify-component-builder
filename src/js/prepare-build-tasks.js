@@ -232,7 +232,7 @@ function embedCodesPage(context, baseUrl, assetContext, path) {
   }
 
   // for dev builds baseUrl is always localhost
-  var urlPath = path.substring(1) + "/";
+  var urlPath = path.substring(1);
   var embedUrl = context.dev ? ("http://localhost:3000/" + urlPath) : baseUrl + assetContext + urlPath;
   var baseUrl = context.dev ? ("http://localhost:3000/") : baseUrl + assetContext;
 
