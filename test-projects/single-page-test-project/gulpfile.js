@@ -16,10 +16,7 @@ var opts = {
   iFrameResize: false,
   paths: ['node_modules/lucify-commons', 'test_modules/module1'],
   publishFromFolder: 'dist',
-  defaultBucket: 'lucify-dev',
-  maxAge: 3600,
-  assetContext: 'hello-world/',
-  baseUrl: 'http://dev.lucify.com/',
+  assetContext: 'hello-world/'
 }
 
 var builder = require('../../index.js'); // lucify-component-builder
