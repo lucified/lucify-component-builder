@@ -7,6 +7,9 @@ function getProject(opts) {
   if (process.env.PROJECT) {
     return process.env.PROJECT;
   }
+  if (process.env.CIRCLE_PROJECT_REPONAME) {
+    return process.env.CIRCLE_PROJECT_REPONAME;
+  }
   if (opts.project) {
     return opts.project;
   }
@@ -21,12 +24,18 @@ function getCommit() {
   if (process.env.COMMIT) {
     return process.env.COMMIT;
   }
+  if (process.env.CIRCLE_SHA1) {
+    return process.env.CIRCLE_SHA1;
+  }
   return git.long();
 }
 
 
 function getBranch() {
   if (process.env.BRANCH) {
+    return process.env.BRANCH;
+  }
+  if (process.env.CIRCLE_BRANCH) {
     return process.env.BRANCH;
   }
   return git.branch();
