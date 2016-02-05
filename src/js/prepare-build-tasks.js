@@ -10,6 +10,7 @@ var parseArgs = require('minimist');
 var deepcopy = require('deepcopy');
 var mergeStream = require('merge-stream');
 var replaceall = require("replaceall");
+var git = require('git-rev-sync');
 
 var buildTools = require('lucify-build-tools');
 var embedCode = require('lucify-commons/src/js/embed-code.js');
@@ -280,7 +281,7 @@ function notify(opts, cb) {
         //"from_name": "Mr. Robot",
         "from_address": "deploy@lucify.com",
         "subject": `Deployed ${project} to ${buildType}`,
-        "content": `See ${distUrl}`,
+        "content": `<p>${gitMessage}</p> <p>${distUrl}</p>`,
         "project": project,
         "tags":  ["#deployment", `#${process.env.NODE_ENV || 'development'}`]
       }
