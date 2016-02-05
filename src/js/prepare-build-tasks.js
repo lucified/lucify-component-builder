@@ -10,9 +10,15 @@ var parseArgs = require('minimist');
 var deepcopy = require('deepcopy');
 var mergeStream = require('merge-stream');
 var replaceall = require("replaceall");
+var extend = require('object-extend');
+var request = require('request');
+var git = require('git-rev-sync');
 
 var buildTools = require('lucify-build-tools');
 var embedCode = require('lucify-commons/src/js/embed-code.js');
+
+var deployOptions = require('./deploy-options.js');
+
 
 var src  = gulp.src;
 var dest = gulp.dest;
@@ -226,7 +232,7 @@ function embedCodesPage(context, baseUrl, assetContext, path) {
   }
 
   // for dev builds baseUrl is always localhost
-  var urlPath = path.substring(1) + "/";
+  var urlPath = path.substring(1);
   var embedUrl = context.dev ? ("http://localhost:3000/" + urlPath) : baseUrl + assetContext + urlPath;
   var baseUrl = context.dev ? ("http://localhost:3000/") : baseUrl + assetContext;
 
@@ -264,8 +270,71 @@ function prepareSkeleton(cb) {
 function setupDistBuild(cb) {
   context.dev = false;
   context.destPath = j('dist', context.assetPath);
-  del.sync('dist')
-  cb()
+  del.sync('dist');
+  cb();
+}
+
+function notify(opts, cb) {
+    var project = opts.deployOptions.getProject(opts);
+    var buildType = getBuildType();
+    var distUrl = getFullDistUrl(opts);
+    var gitMessage = git.message();
+
+    var options = {
+      url: `https://api.flowdock.com/v1/messages/team_inbox/${process.env.FLOW_TOKEN}`,
+      method: 'POST',
+      json: true,
+      body: {
+        "source": "CircleCI",
+        //"from_name": "Mr. Robot",
+        "from_address": "deploy@lucify.com",
+        "subject": `Deployed ${project} to ${buildType}`,
+        "content": `<p>${gitMessage}</p> <p>${distUrl}</p>`,
+        "project": project,
+        "tags":  ["#deployment", `#${process.env.NODE_ENV || 'development'}`]
+      }
+    }
+    request(options, (error, res, body) => {
+      if(error) {
+        console.log(error)
+        return cb()
+      }
+      if(res.statusCode != 200) {
+        console.log(`STATUS: ${res.statusCode}`);
+        console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+        console.log(`BODY: ${JSON.stringify(body)}`);
+      }
+      cb()
+    });
+}
+
+
+function getBuildType() {
+  return process.env.NODE_ENV ? process.env.NODE_ENV : "dev";
+}
+
+
+function getDeployOptionsForTarget(opts) {
+  return opts.deployOptions.targets[getBuildType()];
+}
+
+
+function getFullDistUrl(opts) {
+  var to = getDeployOptionsForTarget(opts);
+  return to.baseUrl + to.getAssetContext(opts);
+}
+
+
+function getBucketForDistBuild(opts) {
+  return getDeployOptionsForTarget(opts).bucket;
+}
+
+
+function prepareDeployOptions(opts) {
+    if (!opts.deployOptions) {
+        opts.deployOptions = deployOptions;
+    }
+    opts.deployOptions = extend(deployOptions, opts.deployOptions);
 }
 
 
@@ -273,6 +342,19 @@ var prepareBuildTasks = function(gulp, opts) {
   if (!opts) {
       opts = {};
   }
+
+  prepareDeployOptions(opts);
+
+  if (!getDeployOptionsForTarget(opts)) {
+      console.log("Error: No deploy options found for target '" + getBuildType() + "'");
+      console.log(opts);
+      process.exit(1);
+  }
+
+
+  opts.assetContext = getDeployOptionsForTarget(opts).getAssetContext(opts);
+  opts.baseUrl = getDeployOptionsForTarget(opts).baseUrl;
+  opts.maxAge = getDeployOptionsForTarget(opts).maxAge;
 
   context.assetPath = !opts.assetContext ? "" : opts.assetContext;
 
@@ -295,6 +377,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
+  gulp.task('notify', notify.bind(null, opts));
 
   var buildTaskNames = [
     'images',
@@ -324,11 +407,12 @@ var prepareBuildTasks = function(gulp, opts) {
     .bind(null,
       buildTools.s3.entryPointStream(opts.publishFromFolder),
       buildTools.s3.assetStream(opts.publishFromFolder, opts.maxAge),
-      options.bucket || opts.defaultBucket,
+      getBucketForDistBuild(opts),
       options.simulate,
       options.force
     )
   )
+  gulp.task('s3-deployandnotify', gulp.series('s3-deploy', 'notify'))
 
 };
 

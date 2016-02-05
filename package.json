@@ -18,6 +18,7 @@
     "babelify": "^7.2.0",
     "deepcopy": "^0.5.0",
     "del": "^2.0.2",
+    "git-rev-sync": "^1.4.0",
     "gulp": "gulpjs/gulp#4.0",
     "gulp-load-plugins": "^0.10.0",
     "gulp-notify": "^2.2.0",
@@ -27,8 +28,11 @@
     "merge-stream": "^1.0.0",
     "minimist": "^1.2.0",
     "mkpath": "^0.1.0",
+    "object-extend": "^0.5.0",
+    "project-name": "^0.2.4",
     "query-string": "^2.4.1",
     "replaceall": "^0.1.6",
+    "request": "^2.69.0",
     "through2": "^2.0.0"
   },
   "browserify": {
