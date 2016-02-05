@@ -354,6 +354,7 @@ var prepareBuildTasks = function(gulp, opts) {
 
   opts.assetContext = getDeployOptionsForTarget(opts).getAssetContext(opts);
   opts.baseUrl = getDeployOptionsForTarget(opts).baseUrl;
+  opts.maxAge = getDeployOptionsForTarget(opts).maxAge;
 
   context.assetPath = !opts.assetContext ? "" : opts.assetContext;
 

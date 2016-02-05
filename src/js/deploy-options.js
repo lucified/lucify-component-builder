@@ -62,22 +62,26 @@ var deployOptions = {
     prod: {
         bucket: 'lucify-prod',
         baseUrl: 'http://www.lucify.com/',
-        getAssetContext: getAssetContext
+        getAssetContext: getAssetContext,
+        maxAge: 3600
     },
     staging: {
         bucket: 'lucify-staging',
         baseUrl: 'http://staging.lucify.com/',
-        getAssetContext: getAssetContext
+        getAssetContext: getAssetContext,
+        maxAge: 0
     },
     dev: {
         bucket: 'lucify-dev',
         baseUrl: 'http://dev.lucify.com/',
-        getAssetContext: getAssetContext
+        getAssetContext: getAssetContext,
+        maxAge: 0
     },
     testing: {
         bucket: 'lucify-development',
         baseUrl: 'http://lucify-development.s3-website-eu-west-1.amazonaws.com/',
-        getAssetContext: getAssetContextTesting
+        getAssetContext: getAssetContextTesting,
+        maxAge: 0
     }
   },
   getProject: getProject
