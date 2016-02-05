@@ -1,4 +1,7 @@
 
+var git = require('git-rev-sync');
+var name = require('project-name');
+
 
 function getProject(opts) {
   if (process.env.PROJECT) {
@@ -7,15 +10,34 @@ function getProject(opts) {
   if (opts.project) {
     return opts.project;
   }
+  if (name()) {
+    return name();
+  }
   return 'unknown-project';
 }
 
 
+function getCommit() {
+  if (process.env.COMMIT) {
+    return process.env.COMMIT;
+  }
+  return git.long();
+}
+
+
+function getBranch() {
+  if (process.env.BRANCH) {
+    return process.env.BRANCH;
+  }
+  return git.branch();
+}
+
+
 function getAssetContextTesting(opts) {
-   var project = getProject();
-   var branch = process.env.BRANCH;
+   var project = getProject(opts);
+   var branch = getBranch();
    var path = `${project}-${branch}`;
-   path += process.env.COMMIT ? `-${process.env.COMMIT.substr(0, 7)}` : '';
+   path += getCommit() ? `-${getCommit().substr(0, 7)}` : '';
    path += "/";
    return path;
 }
