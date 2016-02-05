@@ -77,7 +77,7 @@ var deployOptions = {
         getAssetContext: getAssetContext,
         maxAge: 0
     },
-    testing: {
+    test: {
         bucket: 'lucify-development',
         baseUrl: 'http://lucify-development.s3-website-eu-west-1.amazonaws.com/',
         getAssetContext: getAssetContextTesting,
