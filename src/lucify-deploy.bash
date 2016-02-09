@@ -9,3 +9,7 @@ echo "NODE_ENV is $NODE_ENV"
 echo "AWS_ACCESS_KEY_ID is ${AWS_ACCESS_KEY_ID:(-4)}"
 echo "AWS_SECRET_ACCESS_KEY is ${AWS_SECRET_ACCESS_KEY:(-4)}"
 echo "FLOW_TOKEN is ${FLOW_TOKEN:(-4)}"
+
+rm -rf dist
+gulp dist
+gulp s3-deployandnotify
