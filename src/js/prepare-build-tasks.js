@@ -291,7 +291,7 @@ function notify(opts, cb) {
         "subject": `Deployed ${project} to ${buildType}`,
         "content": `<p>${gitMessage}</p> <p>${distUrl}</p>`,
         "project": project,
-        "tags":  ["#deployment", `#${process.env.NODE_ENV || 'development'}`]
+        "tags":  ["#deployment", `#${buildType}`]
       }
     }
     request(options, (error, res, body) => {
@@ -310,7 +310,7 @@ function notify(opts, cb) {
 
 
 function getBuildType() {
-  return process.env.NODE_ENV ? process.env.NODE_ENV : "dev";
+  return process.env.NODE_ENV ? process.env.NODE_ENV : "development";
 }
 
 
