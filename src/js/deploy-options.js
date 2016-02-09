@@ -59,7 +59,7 @@ function getAssetContext(opts) {
 
 var deployOptions = {
   targets: {
-    prod: {
+    production: {
         bucket: 'lucify-prod',
         baseUrl: 'http://www.lucify.com/',
         getAssetContext: getAssetContext,
@@ -71,7 +71,7 @@ var deployOptions = {
         getAssetContext: getAssetContext,
         maxAge: 0
     },
-    dev: {
+    development: {
         bucket: 'lucify-dev',
         baseUrl: 'http://dev.lucify.com/',
         getAssetContext: getAssetContext,
