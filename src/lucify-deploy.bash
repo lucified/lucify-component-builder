@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# exit if any command returns non-zero exit value
+set -e
+
 export NODE_ENV=${OVERRIDE_NODE_ENV:-$NODE_ENV}
 export AWS_ACCESS_KEY_ID=${OVERRIDE_AWS_ACCESS_KEY_ID:-$AWS_ACCESS_KEY_ID}
 export AWS_SECRET_ACCESS_KEY=${OVERRIDE_AWS_SECRET_ACCESS_KEY:-$AWS_SECRET_ACCESS_KEY}
