@@ -1,6 +1,6 @@
 {
   "name": "lucify-component-builder",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "Utility for building and publishing convenient distributions of React components",
   "main": "index.js",
   "engines": {
@@ -13,7 +13,9 @@
     "type": "git",
     "url": "https://github.com/lucified/lucify-component-builder.git"
   },
-  "bin" : { "lucify-deploy" : "./src/lucify-deploy.bash" },
+  "bin": {
+    "lucify-deploy": "./src/lucify-deploy.bash"
+  },
   "license": "MIT",
   "dependencies": {
     "babelify": "^7.2.0",
