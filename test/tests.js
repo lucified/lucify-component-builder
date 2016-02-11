@@ -53,7 +53,7 @@ describe("deploy options", () => {
 
 describe("github-deploy", done => {
 
-  it("works", done => {
+  xit("works", done => {
     const deployOpt = require('../src/js/deploy-options.js')(ENVS.TEST)
     let githubDeploy = require('../src/js/github-deploy.js')
     githubDeploy(deployOpt.project, deployOpt.org, deployOpt.branch, deployOpt.env, deployOpt.flow, (e, o) => {
