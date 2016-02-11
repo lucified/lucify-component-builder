@@ -102,6 +102,9 @@ module.exports = function(env, opts_) {
   }
 
   function getCommit() {
+    if (opts.commit) {
+      return opts.commit;
+    }
     if (process.env.COMMIT) {
       return process.env.COMMIT;
     }
@@ -112,6 +115,9 @@ module.exports = function(env, opts_) {
   }
 
   function getBranch() {
+    if (opts.branch) {
+      return opts.branch;
+    }
     if (process.env.BRANCH) {
       return process.env.BRANCH;
     }

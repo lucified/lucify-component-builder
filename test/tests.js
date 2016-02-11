@@ -38,7 +38,10 @@ describe("deploy options", () => {
     }
     const o = deployOpt(ENVS.PRODUCTION, overrides)
     for (var k in overrides) {
-      o.should.have.property(k, overrides[k])
+      if (k === "url")
+        o.should.have.property(k, overrides["url"]+overrides["assetContext"])
+      else
+        o.should.have.property(k, overrides[k])
     }
   })
 
@@ -48,7 +51,7 @@ describe("deploy options", () => {
 
 describe("github-deploy", done => {
 
-  it("works", done => {
+  xit("works", done => {
     const deployOpt = require('../src/js/deploy-options.js')(ENVS.TEST)
 
     let githubDeploy = builder.githubDeploy
@@ -65,7 +68,7 @@ describe("github-deploy", done => {
 })
 
 describe("build test projects", () => {
-  xit("works", done => {
+  it("works", done => {
     const parent = require('path').normalize(__dirname + "/../")
     const spawn = require('child_process').spawn;
     const p = spawn('./build-test-projects', [], {cwd: parent});
