@@ -19,6 +19,7 @@ var embedCode = require('lucify-commons/src/js/embed-code.js');
 
 var deployOptions = require('./deploy-options.js');
 
+var githubDeploy = require('./github-deploy.js');
 
 var src  = gulp.src;
 var dest = gulp.dest;
@@ -388,6 +389,15 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('setup-dist-build', setupDistBuild);
   gulp.task('notify', notify.bind(null, opts));
   gulp.task('build-artifact', writeBuildArtifact.bind(null, deployOpt.url, opts.artifactFile || defaultArtifactFile))
+
+  gulp.task('github-deploy', githubDeploy.bind(null,
+       deployOpt.project,
+       deployOpt.org,
+       deployOpt.branch,
+       deployOpt.env,
+       deployOpt.flow
+     )
+  );
 
   var buildTaskNames = [
     'images',
