@@ -324,8 +324,12 @@ function notify(project, org, branch, env, url, cb) {
 }
 
 
-function getBuildType() {
-  return process.env.NODE_ENV ? process.env.NODE_ENV : "development";
+function getEnv() {
+  if(process.env.LUCIFY_ENV)
+    return process.env.LUCIFY_ENV
+  if(process.env.NODE_ENV)
+    return process.env.NODE_ENV
+  return ENVS.TEST;
 }
 
 
