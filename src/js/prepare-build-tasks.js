@@ -450,11 +450,11 @@ var prepareBuildTasks = function(gulp, opts) {
     'set-watch', 'build', 'watch', 'serve'));
 
   //console.log(options)
-  gulp.task('s3-deploy', buildTools.s3.publish
+  gulp.task('s3-deploy', s3.publish
     .bind(null,
-      buildTools.s3.entryPointStream(opts.publishFromFolder),
-      buildTools.s3.assetStream(opts.publishFromFolder, opts.maxAge),
-      getBucketForDistBuild(opts),
+      s3.entryPointStream(opts.publishFromFolder),
+      s3.assetStream(opts.publishFromFolder, opts.maxAge),
+      deployOpt.bucket,
       options.simulate,
       options.force
     )
