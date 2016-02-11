@@ -333,11 +333,6 @@ function getEnv() {
 }
 
 
-function getBuildType() {
-  return process.env.NODE_ENV ? process.env.NODE_ENV : "development";
-}
-
-
 function writeBuildArtifact(url, fileName, cb) {
    const fn = fileName || defaultArtifactFile
    const folder = process.env.CIRCLE_ARTIFACTS
@@ -358,7 +353,7 @@ var prepareBuildTasks = function(gulp, opts) {
   const deployOpt = require('./deploy-options')(getEnv(), opts);
 
   if (!deployOpt) {
-      console.log("Error: No deploy options found for target '" + getBuildType() + "'");
+      console.log("Error: No deploy options found for target '" + getEnv() + "'");
       console.log(opts);
       process.exit(1);
   }
