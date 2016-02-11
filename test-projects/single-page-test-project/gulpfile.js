@@ -14,6 +14,7 @@ var opts = {
   }),
 
   iFrameResize: false,
+  embedCodes: false,
   paths: ['node_modules/lucify-commons', 'test_modules/module1'],
   publishFromFolder: 'dist',
   assetContext: 'hello-world/'

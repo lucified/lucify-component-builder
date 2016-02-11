@@ -212,20 +212,23 @@ function bundleResize() {
 }
 
 
-function embedCodes(context, opts) {
+function embedCodes(context, opts, baseUrl, cb) {
+  if (!opts.embedCodes) {
+     return cb();
+  }
   if (Array.isArray(opts.embedDefs)) {
       return mergeStream(opts.embedDefs.map(function(def) {
-        return embedCodesPage(context, opts.baseUrl, opts.assetContext, def.path);
+        return embedCodesPage(context, baseUrl, opts.assetContext, def.path, cb);
       }));
   }
-  return embedCodesPage(context, opts.baseUrl, opts.assetContext, '');
+  return embedCodesPage(context, baseUrl, opts.assetContext, '', cb);
 }
 
 
 /*
  * Generate embed codes
  */
-function embedCodesPage(context, baseUrl, assetContext, path) {
+function embedCodesPage(context, baseUrl, assetContext, path, cb) {
 
   // if baseUrl is not defined, this is not
   // intended to be embeddable, and there is
@@ -365,6 +368,8 @@ var prepareBuildTasks = function(gulp, opts) {
   }
 
   prepareDeployOptions(opts);
+  // set default for embedCodes option to true
+  opts.embedCodes = opts.embedCodes === false ? false : true;
 
   if (!getDeployOptionsForTarget(opts)) {
       console.log("Error: No deploy options found for target '" + getBuildType() + "'");
@@ -394,7 +399,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('bundle-components', bundleComponents.bind(null, opts, context));
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);
-  gulp.task('embed-codes', embedCodes.bind(null, context, opts));
+  gulp.task('embed-codes', embedCodes.bind(null, context, opts, deployOpt.baseUrl));
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
