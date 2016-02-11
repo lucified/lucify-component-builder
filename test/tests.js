@@ -8,16 +8,17 @@ const deployOpt = require('../src/js/deploy-options.js')(ENVS.TEST)
 
 var inspect = (obj) => console.log(require("util").inspect(obj,{ depth: null }))
 
-describe("github-deploy", () => {
+describe("github-deploy", done => {
 
   it("works", done => {
     let githubDeploy = builder.githubDeploy
     githubDeploy(deployOpt.project, deployOpt.org, deployOpt.branch, deployOpt.env, deployOpt.flow, (e, o) => {
       if(e) {
         inspect(e.options)
-        throw e
+        done(e)
       }
       inspect(o)
+      done()
     })
   })
 
