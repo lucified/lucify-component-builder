@@ -278,10 +278,18 @@ function setupDistBuild(cb) {
   cb();
 }
 
-function notify(opts, cb) {
-    var project = opts.deployOptions.getProject(opts);
-    var buildType = getBuildType();
-    var distUrl = getFullDistUrl(opts);
+
+function notify(project, org, branch, env, url, cb) {
+
+    // we still support also the legacy flowdock PUSH api
+    // notification, which will be delivered if a FLOW_TOKEN
+    // is defined.
+
+    if (!process.env.FLOW_TOKEN) {
+      cb();
+      return;
+    }
+
     var gitMessage = git.message();
 
     var options = {
@@ -292,10 +300,10 @@ function notify(opts, cb) {
         "source": "CircleCI",
         //"from_name": "Mr. Robot",
         "from_address": "deploy@lucify.com",
-        "subject": `Deployed ${project} to ${buildType}`,
-        "content": `<p>${gitMessage}</p> <p>${distUrl}</p>`,
+        "subject": `Deployed branch ${project}/${branch} to ${env}`,
+        "content": `<p>${gitMessage}</p> <p>${url}</p>`,
         "project": project,
-        "tags":  ["#deployment", `#${buildType}`]
+        "tags":  ["#deployment", `#${env}`]
       }
     }
     request(options, (error, res, body) => {
@@ -390,7 +398,14 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
-  gulp.task('notify', notify.bind(null, opts));
+  gulp.task('notify', notify.bind(null, deployOpt.project,
+       deployOpt.org,
+       deployOpt.branch,
+       deployOpt.env,
+       deployOpt.url
+       )
+  );
+
   gulp.task('build-artifact', writeBuildArtifact.bind(null, deployOpt.url, opts.artifactFile || defaultArtifactFile))
 
   gulp.task('github-deploy', githubDeploy.bind(null,
