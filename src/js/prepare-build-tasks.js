@@ -1,3 +1,4 @@
+"use strict";
 
 var gulp = require('gulp');
 var path = require('path');
@@ -10,18 +11,21 @@ var parseArgs = require('minimist');
 var mergeStream = require('merge-stream');
 var replaceall = require("replaceall");
 var Promise = require('bluebird');
+var request = require('request')
 
-var buildTools = require('lucify-build-tools');
+var s3 = require('./s3.js')
 var bundleWebpack = require('./bundle-webpack.js');
 
 var embedCodeUtils = require('./embed-code-utils.js');
 var pageDefUtils = require('./page-def-utils.js');
 
+
 var src  = gulp.src;
 var dest = gulp.dest;
 var j = path.join;
 
-
+const ENVS = require('./envs.js')
+const defaultArtifactFile = 'build-info.json'
 //
 // Detect options and prepare build context accordingly
 // ----------------------------------------------------
@@ -42,8 +46,7 @@ if (options.profile != null) {
   process.env['AWS_DEFAULT_PROFILE'] = options.profile;
 }
 
-var context = new buildTools.BuildContext(
-    options.dev, options.optimize, options.uglify);
+var context = require('./build-context.js')(options.dev, options.optimize, options.uglify);
 
 
 //
@@ -199,12 +202,97 @@ function setupDistBuild(cb) {
 }
 
 
-//
-// Setting up of tasks for CLI
-// ---------------------------
-//
+function githubDeploy(project, org, branch, env, flow, cb) {
 
-var prepareBuildTasks = function(gulp, opts) {
+    const task = "deploy"
+    const robotName = "lucifer"
+
+    var body = {
+      ref: branch,
+      task: task,
+      force: false,
+      auto_merge: false,
+      environment: env,
+      required_contexts: [],
+      description: `${task} on ${env} from lucify-component-builder`,
+      payload: {
+        name: project,
+        robotName: robotName,
+        hosts: "",
+        notify: {
+          adapter: "flowdock",
+          room: flow
+//          user: @user
+//          message_id: @messageId
+//          thread_id: @threadId
+        },
+        config: {
+          provider: "circleci",
+          circle_build_num: process.env.CIRCLE_BUILD_NUM
+        }
+      }
+    }
+
+    var options = {
+      url: `https://api.github.com/repos/${org}/${project}/deployments`,
+      method: 'POST',
+      auth: {
+        user: "lucified-lucifer",
+        pass: process.env.GITHUB_TOKEN
+      },
+      headers: {
+        'User-Agent': org
+      },
+      json: true,
+      body: body
+    }
+
+
+
+    request(options, (error, res, body) => {
+      if(error) {
+        console.log(error)
+        return cb(error)
+      }
+
+      const STATUS = res.statusCode
+      const HEADERS = res.headers
+      const BODY = body
+
+      if(STATUS < 200 || STATUS >= 300) {
+        console.log(`STATUS: ${STATUS}`);
+        console.log(`HEADERS: ${JSON.stringify(HEADERS)}`);
+        console.log(`BODY: ${JSON.stringify(BODY)}`);
+        var err = new Error(`Received status ${STATUS}`)
+        err.options = options
+        return cb(err)
+      }
+      cb(null, {options, body})
+    });
+}
+
+
+
+function writeBuildArtifact(url, fileName, cb) {
+  const fn = fileName || defaultArtifactFile
+  const folder = process.env.CIRCLE_ARTIFACTS
+  if(folder)
+    require('fs').writeFileSync(`${folder}/${fn}`, JSON.stringify({url: url}))
+  cb()
+}
+
+
+
+function getEnv() {
+  if(process.env.LUCIFY_ENV)
+    return process.env.LUCIFY_ENV
+  if(process.env.NODE_ENV)
+    return process.env.NODE_ENV
+  return ENVS.TEST;
+}
+
+
+var prep = function(gulp, opts) {
   if (!opts) {
       opts = {};
   }
@@ -216,7 +304,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap.bind(null, context, opts.assetContext));
   gulp.task('bundle-resize', bundleResize.bind(null, context, opts.assetContext));
   gulp.task('embed-codes', embedCodeUtils.embedCodes.bind(null, context, opts));
-  gulp.task('serve-prod', buildTools.serveProd);
+  //gulp.task('serve-prod', serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
 
   var buildTaskNames = [
@@ -234,19 +322,35 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('dist', gulp.series('setup-dist-build', 'build'));
   gulp.task('default', gulp.series('build'));
 
-  //console.log(options)
-  gulp.task('s3-deploy', buildTools.s3.publish
+  const deployOpt = require('./deploy-options')(getEnv(), opts)
+
+
+  gulp.task('s3-deploy', s3.publish
     .bind(null,
-      buildTools.s3.entryPointStream(opts.publishFromFolder),
-      buildTools.s3.assetStream(opts.publishFromFolder, opts.maxAge),
-      options.bucket || opts.defaultBucket,
+      s3.entryPointStream(opts.publishFromFolder),
+      s3.assetStream(opts.publishFromFolder, opts.maxAge),
+      deployOpt.bucket,
       options.simulate,
       options.force
     )
   )
 
+  gulp.task('github-deploy', githubDeploy.bind(null,
+      deployOpt.project,
+      deployOpt.org,
+      deployOpt.branch,
+      deployOpt.env,
+      deployOpt.flow
+    )
+  )
+
+  gulp.task('build-artifact', writeBuildArtifact.bind(null, deployOpt.url, opts.artifactFile || defaultArtifactFile))
+
 };
 
+prep.getEnv = getEnv
+prep.githubDeploy = githubDeploy
+prep.options = options
 
-module.exports = prepareBuildTasks;
 
+module.exports = prep
