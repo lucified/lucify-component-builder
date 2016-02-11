@@ -85,7 +85,7 @@ module.exports = function(env, opts_) {
       return process.env.BRANCH;
     }
     if (process.env.CIRCLE_BRANCH) {
-      return process.env.BRANCH;
+      return process.env.CIRCLE_BRANCH;
     }
     return git.branch();
   }

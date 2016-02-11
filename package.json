@@ -58,6 +58,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "react": "0.13.3",
     "event-stream": "^3.3.2",
     "gulp-debug": "^2.1.2",
     "gulp-util": "^3.0.7",
