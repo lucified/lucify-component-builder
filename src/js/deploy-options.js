@@ -91,7 +91,7 @@ module.exports = function(env, opts_) {
   }
 
   function getAssetContext() {
-    if (opts.assetContext)
+    if (opts.assetContext && env !== ENVS.TEST)
       return opts.assetContext;
 
     var project = getProject();

@@ -1,16 +1,31 @@
 "use strict";
 
+require('chai').should()
 var fs = require('fs')
 var builder = require('../')
 var ENVS = require('../src/js/envs.js')
-const deployOpt = require('../src/js/deploy-options.js')(ENVS.TEST)
+
+const deployOpt = require('../src/js/deploy-options.js')
 
 
 var inspect = (obj) => console.log(require("util").inspect(obj,{ depth: null }))
 
+describe("deploy options", () => {
+
+  it("has correct TEST attributes", () => {
+    const o = deployOpt(ENVS.TEST)
+    inspect(o)
+    o.path.should.equal(o.assetContext)
+  })
+
+})
+
+
 describe("github-deploy", done => {
 
   it("works", done => {
+    const deployOpt = require('../src/js/deploy-options.js')(ENVS.TEST)
+
     let githubDeploy = builder.githubDeploy
     githubDeploy(deployOpt.project, deployOpt.org, deployOpt.branch, deployOpt.env, deployOpt.flow, (e, o) => {
       if(e) {
