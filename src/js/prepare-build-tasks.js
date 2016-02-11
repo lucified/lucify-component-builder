@@ -338,14 +338,6 @@ function getBuildType() {
 }
 
 
-function prepareDeployOptions(opts) {
-    if (!opts.deployOptions) {
-        opts.deployOptions = deployOptions;
-    }
-    opts.deployOptions = extend(deployOptions, opts.deployOptions);
-}
-
-
 function writeBuildArtifact(url, fileName, cb) {
    const fn = fileName || defaultArtifactFile
    const folder = process.env.CIRCLE_ARTIFACTS
