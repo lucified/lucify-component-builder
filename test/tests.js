@@ -1,6 +1,7 @@
 "use strict";
 
 require('chai').should()
+var expect = require('chai').expect;
 var fs = require('fs')
 var builder = require('../')
 var ENVS = require('../src/js/envs.js')
@@ -12,11 +13,35 @@ var inspect = (obj) => console.log(require("util").inspect(obj,{ depth: null }))
 
 describe("deploy options", () => {
 
-  it("has correct TEST attributes", () => {
+  it("has equal path and assetContext", () => {
     const o = deployOpt(ENVS.TEST)
-    inspect(o)
     o.path.should.equal(o.assetContext)
   })
+
+  it("throws with unknown env", () => {
+      expect(deployOpt.bind(null, "unknown")).to.throw(Error)
+  })
+
+  it("allows overrides", () => {
+    const overrides = {
+      bucket: "overridden",
+      baseUrl: "overridden",
+      maxAge: "overridden",
+      assetContext: "overridden",
+      path: "overridden",
+      url: "overridden",
+      project: "overridden",
+      org: "overridden",
+      commit: "overridden",
+      branch: "overridden",
+      flow: "overridden"
+    }
+    const o = deployOpt(ENVS.PRODUCTION, overrides)
+    for (var k in overrides) {
+      o.should.have.property(k, overrides[k])
+    }
+  })
+
 
 })
 
@@ -40,7 +65,7 @@ describe("github-deploy", done => {
 })
 
 describe("build test projects", () => {
-  it("works", done => {
+  xit("works", done => {
     const parent = require('path').normalize(__dirname + "/../")
     const spawn = require('child_process').spawn;
     const p = spawn('./build-test-projects', [], {cwd: parent});

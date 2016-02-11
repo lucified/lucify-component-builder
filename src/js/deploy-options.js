@@ -47,6 +47,37 @@ module.exports = function(env, opts_) {
     return 'unknown-project';
   }
 
+  function getBucket() {
+    if (opts.bucket) {
+      return opts.bucket;
+    }
+    if (process.env.BUCKET) {
+      return process.env.BUCKET;
+    }
+    return deployOptions[env].bucket;
+  }
+
+  function getBaseUrl() {
+    if (opts.baseUrl) {
+      return opts.baseUrl;
+    }
+    if (process.env.BASEURL) {
+      return process.env.BASEURL;
+    }
+    return deployOptions[env].baseUrl;
+  }
+
+  function getMaxAge() {
+    if (opts.maxAge) {
+      return opts.maxAge;
+    }
+    if (process.env.MAXAGE) {
+      return process.env.MAXAGE;
+    }
+    return deployOptions[env].maxAge;
+  }
+
+
   function getOrg() {
     if (opts.org) {
       return opts.org;
@@ -103,19 +134,21 @@ module.exports = function(env, opts_) {
     return path;
   }
 
-  let o = deployOptions[env]
-  if (!o) throw new Error(`Unknown environment ${env}`)
+  if (!deployOptions[env]) throw new Error(`Unknown environment ${env}`)
 
-  o.assetContext = getAssetContext()
-  o.path = o.assetContext
-  o.url = o.baseUrl + o.assetContext
-  o.project = getProject()
-  o.org = getOrg()
-  o.commit = getCommit()
-  o.branch = getBranch()
-  o.flow = getFlow()
-  o.env = env
-
-  return o
+  return {
+    bucket: getBucket(),
+    baseUrl: getBaseUrl(),
+    maxAge: getMaxAge(),
+    assetContext: getAssetContext(),
+    path: getAssetContext(),
+    url: getBaseUrl() + getAssetContext(),
+    project: getProject(),
+    org: getOrg(),
+    commit: getCommit(),
+    branch: getBranch(),
+    flow: getFlow(),
+    env: env
+  }
 }
 
