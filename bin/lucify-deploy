@@ -21,7 +21,7 @@ echo "AWS_SECRET_ACCESS_KEY ends '${AWS_SECRET_ACCESS_KEY:(-4)}'"
 echo "FLOW_TOKEN ends '${FLOW_TOKEN:(-4)}'"
 
 rm -rf dist
-gulp github-deployment
+gulp github-deploy
 gulp build-artifact
 gulp dist
 gulp s3-deploy
