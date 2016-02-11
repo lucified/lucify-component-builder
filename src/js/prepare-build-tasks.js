@@ -333,19 +333,8 @@ function getEnv() {
 }
 
 
-function getDeployOptionsForTarget(opts) {
-  return opts.deployOptions.targets[getBuildType()];
-}
-
-
-function getFullDistUrl(opts) {
-  var to = getDeployOptionsForTarget(opts);
-  return to.baseUrl + to.getAssetContext(opts);
-}
-
-
-function getBucketForDistBuild(opts) {
-  return getDeployOptionsForTarget(opts).bucket;
+function getBuildType() {
+  return process.env.NODE_ENV ? process.env.NODE_ENV : "development";
 }
 
 
@@ -371,20 +360,16 @@ var prepareBuildTasks = function(gulp, opts) {
       opts = {};
   }
 
-  prepareDeployOptions(opts);
   // set default for embedCodes option to true
   opts.embedCodes = opts.embedCodes === false ? false : true;
 
-  if (!getDeployOptionsForTarget(opts)) {
+  const deployOpt = require('./deploy-options')(getEnv(), opts);
+
+  if (!deployOpt) {
       console.log("Error: No deploy options found for target '" + getBuildType() + "'");
       console.log(opts);
       process.exit(1);
   }
-
-
-  opts.assetContext = getDeployOptionsForTarget(opts).getAssetContext(opts);
-  opts.baseUrl = getDeployOptionsForTarget(opts).baseUrl;
-  opts.maxAge = getDeployOptionsForTarget(opts).maxAge;
 
   context.assetPath = !opts.assetContext ? "" : opts.assetContext;
 
