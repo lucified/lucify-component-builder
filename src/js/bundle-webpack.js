@@ -140,6 +140,8 @@ function devServerBundle(config, destPath) {
   }
 
   var compiler = webpack(config);
+  console.log("WebpackDevServer listening on localhost:3000")
+
   new WebpackDevServer(compiler, {
       contentBase: destPath,
       noInfo: false,

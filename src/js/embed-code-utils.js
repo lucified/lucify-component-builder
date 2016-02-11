@@ -11,27 +11,29 @@ var src  = gulp.src;
 var dest = gulp.dest;
 
 
-function embedCodes(context, opts) {
+function embedCodes(context, opts, cb) {
+  if (!opts.baseUrl) {
+    return cb()
+  }
   if (Array.isArray(opts.embedDefs)) {
       return mergeStream(opts.embedDefs.map(function(def) {
         return embedCodesPage(context, opts.baseUrl, opts.assetContext, def.path);
       }));
   }
-  return embedCodesPage(context, opts.baseUrl, opts.assetContext, '');
+  return embedCodesPage(context, opts.baseUrl, opts.assetContext, '', cb);
 }
 
 
 /*
  * Generate embed codes
  */
-function embedCodesPage(context, baseUrl, assetContext, path) {
+function embedCodesPage(context, baseUrl, assetContext, path, cb) {
 
   // if baseUrl is not defined, this is not
   // intended to be embeddable, and there is
   // no need to generate embed codes
   if (!baseUrl) {
-    cb();
-    return;
+    return cb()
   }
 
   // for dev builds baseUrl is always localhost
