@@ -25,7 +25,9 @@ var opts = {
   paths: ['node_modules/lucify-commons', 'test_modules/module1'],
   publishFromFolder: 'dist',
   assetContext: 'test-path/',
-  pageDefs: defs
+  pageDefs: defs,
+  embedCodes: false,
+  iframeResize: false
 }
 
 
