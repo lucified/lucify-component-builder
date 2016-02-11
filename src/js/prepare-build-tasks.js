@@ -44,7 +44,7 @@ if (options.profile != null) {
 }
 
 
-var context = new buildTools.BuildContext(
+var context = require('./build-context.js')(
     options.dev, options.optimize, options.uglify);
 
 var packagePath = options.packagePath;
