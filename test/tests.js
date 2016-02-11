@@ -1,9 +1,12 @@
 "use strict";
 
-require('chai').should()
+var chai = require('chai');
+chai.should();
 var fs = require('fs')
 var builder = require('../')
 var ENVS = require('../src/js/envs.js')
+
+chai.use(require('chai-fs'));
 
 var fileExists = require('file-exists');
 
@@ -13,7 +16,6 @@ const deployOpt = require('../src/js/deploy-options.js')
 var inspect = (obj) => console.log(require("util").inspect(obj,{ depth: null }))
 
 describe("deploy options", () => {
-
   it("has correct TEST attributes", () => {
     const o = deployOpt(ENVS.TEST)
     inspect(o)
@@ -62,35 +64,35 @@ describe("build test projects", () => {
   })
 
   it("creates basic assets for single-page-test-project", done => {
-    fileExists('test-projects/single-page-test-project/dist/hello-world/index.html').should.equal(true);
-    fileExists('test-projects/single-page-test-project/dist/index.html').should.equal(false);
+    'test-projects/single-page-test-project/dist/hello-world/index.html'.should.be.a.file().and.not.empty;
+    'test-projects/single-page-test-project/dist/index.html'.should.not.be.a.path();
     done();
   });
 
   it("creates basic assets for single-embed-test-project", done => {
-    fileExists('test-projects/single-embed-test-project/dist/embed/hello-world/index.html').should.equal(true);
-    fileExists('test-projects/single-embed-test-project/dist/embed/hello-world/embed-codes.html').should.equal(true);
-    fileExists('test-projects/single-embed-test-project/dist/embed/hello-world/embed.js').should.equal(true);
-    fileExists('test-projects/single-embed-test-project/dist/embed/hello-world/resize.js').should.equal(true);
-    fileExists('test-projects/single-embed-test-project/dist/index.html').should.equal(false);
+    'test-projects/single-embed-test-project/dist/embed/hello-world/index.html'.should.be.a.file().and.not.empty;
+    'test-projects/single-embed-test-project/dist/embed/hello-world/embed-codes.html'.should.be.a.file().and.not.empty;
+    'test-projects/single-embed-test-project/dist/embed/hello-world/embed.js'.should.be.a.file().and.not.empty;
+    'test-projects/single-embed-test-project/dist/embed/hello-world/resize.js'.should.be.a.file().and.not.empty;
+    'test-projects/single-embed-test-project/dist/index.html'.should.not.be.a.path();
     done();
   });
 
   it("creates basic assets for multi-embed-test-project", done => {
-    fileExists('test-projects/multi-embed-test-project/dist/embed/hello-world/index.html').should.equal(true);
-    fileExists('test-projects/multi-embed-test-project/dist/embed/hello-world/embed-codes.html').should.equal(true);
-    fileExists('test-projects/multi-embed-test-project/dist/embed/subpath/hello-world-two/index.html').should.equal(true);
-    fileExists('test-projects/multi-embed-test-project/dist/embed/subpath/hello-world-two/embed-codes.html').should.equal(true);
-    fileExists('test-projects/multi-embed-test-project/dist/embed/embed.js').should.equal(true);
-    fileExists('test-projects/multi-embed-test-project/dist/embed/resize.js').should.equal(true);
-    fileExists('test-projects/multi-embed-test-project/dist/embed/index.html').should.equal(false);
+    'test-projects/multi-embed-test-project/dist/embed/hello-world/index.html'.should.be.a.file().and.not.empty;
+    'test-projects/multi-embed-test-project/dist/embed/hello-world/embed-codes.html'.should.be.a.file().and.not.empty;
+    'test-projects/multi-embed-test-project/dist/embed/subpath/hello-world-two/index.html'.should.be.a.file().and.not.empty;
+    'test-projects/multi-embed-test-project/dist/embed/subpath/hello-world-two/embed-codes.html'.should.be.a.file().and.not.empty;
+    'test-projects/multi-embed-test-project/dist/embed/embed.js'.should.be.a.file().and.not.empty;
+    'test-projects/multi-embed-test-project/dist/embed/resize.js'.should.be.a.file().and.not.empty;
+    'test-projects/multi-embed-test-project/dist/embed/index.html'.should.not.be.a.path();
     done();
   });
 
   it("creates basic assets for multi-page-test-project", done => {
-    fileExists('test-projects/multi-page-test-project/dist/test-path/index.html').should.equal(true);
-    fileExists('test-projects/multi-page-test-project/dist/test-path/embed-codes.html').should.equal(false);
-    fileExists('test-projects/multi-page-test-project/dist/test-path/subpage/index.html').should.equal(true);
+    'test-projects/multi-page-test-project/dist/test-path/index.html'.should.be.a.file().and.not.empty;
+    'test-projects/multi-page-test-project/dist/test-path/embed-codes.html'.should.not.be.a.path();
+    'test-projects/multi-page-test-project/dist/test-path/subpage/index.html'.should.be.a.file().and.not.empty;
     done();
   });
 
