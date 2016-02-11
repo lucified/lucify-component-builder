@@ -14,11 +14,14 @@ var extend = require('object-extend');
 var request = require('request');
 var git = require('git-rev-sync');
 
+var s3 = require('./s3.js');
+const ENVS = require('./envs.js');
+const defaultArtifactFile = 'build-info.json';
+
 var buildTools = require('lucify-build-tools');
 var embedCode = require('lucify-commons/src/js/embed-code.js');
 
 var deployOptions = require('./deploy-options.js');
-
 var githubDeploy = require('./github-deploy.js');
 
 var src  = gulp.src;
