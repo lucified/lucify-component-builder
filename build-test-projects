@@ -1,6 +1,7 @@
 #!/bin/bash
 
 cd test-projects
+export LUCIFY_ENV=development
 
 for i in $( ls ); do
     cd $i
