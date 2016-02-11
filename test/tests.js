@@ -34,7 +34,6 @@ describe("deploy options", () => {
       maxAge: "overridden",
       assetContext: "overridden",
       path: "overridden",
-      url: "overridden",
       project: "overridden",
       org: "overridden",
       commit: "overridden",
