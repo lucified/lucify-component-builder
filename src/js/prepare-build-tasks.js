@@ -212,16 +212,16 @@ function bundleResize() {
 }
 
 
-function embedCodes(context, opts, baseUrl, cb) {
+function embedCodes(context, opts, baseUrl, assetContext, cb) {
   if (!opts.embedCodes) {
      return cb();
   }
   if (Array.isArray(opts.embedDefs)) {
       return mergeStream(opts.embedDefs.map(function(def) {
-        return embedCodesPage(context, baseUrl, opts.assetContext, def.path, cb);
+        return embedCodesPage(context, baseUrl, assetContext, def.path, cb);
       }));
   }
-  return embedCodesPage(context, baseUrl, opts.assetContext, '', cb);
+  return embedCodesPage(context, baseUrl, assetContext, '', cb);
 }
 
 
@@ -371,7 +371,7 @@ var prepareBuildTasks = function(gulp, opts) {
       process.exit(1);
   }
 
-  context.assetPath = !opts.assetContext ? "" : opts.assetContext;
+  context.assetPath = !deployOpt.assetContext ? "" : deployOpt.assetContext;
 
   gulp.task('watch', function(cb) {
       gulp.watch('./**/*.scss', gulp.series('styles'));
@@ -384,11 +384,11 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('data', buildTools.data.bind(null, context, opts.paths));
   gulp.task('styles', buildTools.styles.bind(null, context));
   gulp.task('manifest', buildTools.manifest.bind(null, context));
-  gulp.task('html', html.bind(null, context, opts, opts.baseUrl, opts.assetContext));
+  gulp.task('html', html.bind(null, context, opts, opts.baseUrl, deployOpt.assetContext));
   gulp.task('bundle-components', bundleComponents.bind(null, opts, context));
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);
-  gulp.task('embed-codes', embedCodes.bind(null, context, opts, deployOpt.baseUrl));
+  gulp.task('embed-codes', embedCodes.bind(null, context, opts, deployOpt.baseUrl, deployOpt.assetContext));
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
