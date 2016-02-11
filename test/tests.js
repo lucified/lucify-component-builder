@@ -27,8 +27,7 @@ describe("github-deploy", done => {
 
   it("works", done => {
     const deployOpt = require('../src/js/deploy-options.js')(ENVS.TEST)
-
-    let githubDeploy = builder.githubDeploy
+    let githubDeploy = require('../src/js/github-deploy.js')
     githubDeploy(deployOpt.project, deployOpt.org, deployOpt.branch, deployOpt.env, deployOpt.flow, (e, o) => {
       if(e) {
         inspect(e.options)
