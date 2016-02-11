@@ -338,6 +338,15 @@ function prepareDeployOptions(opts) {
 }
 
 
+function writeBuildArtifact(url, fileName, cb) {
+   const fn = fileName || defaultArtifactFile
+   const folder = process.env.CIRCLE_ARTIFACTS
+   if(folder)
+     require('fs').writeFileSync(`${folder}/${fn}`, JSON.stringify({url: url}))
+   cb()
+}
+
+
 var prepareBuildTasks = function(gulp, opts) {
   if (!opts) {
       opts = {};
@@ -378,6 +387,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
   gulp.task('notify', notify.bind(null, opts));
+  gulp.task('build-artifact', writeBuildArtifact.bind(null, deployOpt.url, opts.artifactFile || defaultArtifactFile))
 
   var buildTaskNames = [
     'images',

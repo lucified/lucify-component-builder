@@ -21,4 +21,5 @@ echo "FLOW_TOKEN ends ${FLOW_TOKEN:(-4)}"
 
 rm -rf dist
 gulp dist
+gulp build-artifact
 gulp s3-deployandnotify
