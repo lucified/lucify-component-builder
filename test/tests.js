@@ -3,7 +3,7 @@
 var chai = require('chai');
 chai.should();
 var expect = chai.expect;
-
+var _ = require('lodash')
 var fs = require('fs')
 var builder = require('../')
 var ENVS = require('../src/js/envs.js')
@@ -27,11 +27,11 @@ describe("deploy options", () => {
       expect(deployOpt.bind(null, "unknown")).to.throw(Error)
   })
 
-  it("allows overrides", () => {
+  it("allows simple overrides", () => {
     const overrides = {
       bucket: "overridden",
       baseUrl: "overridden",
-      maxAge: "overridden",
+      maxAge: 1800,
       assetContext: "overridden",
       path: "overridden",
       project: "overridden",
@@ -47,6 +47,40 @@ describe("deploy options", () => {
       o.should.have.property(k, overrides[k])
     }
   })
+
+  it("allows function overrides", () => {
+
+    const numbers = _.zipObject(_.values(ENVS), _.range(0,_.values(ENVS).length))
+
+    const s = env => env
+    const i = env => numbers[env]
+    const b = env => env === ENVS.PRODUCTION ? true : false
+
+    const overrides = {
+      bucket: s,
+      baseUrl: s,
+      maxAge: i,
+      assetContext: s,
+      path: s,
+      project: s,
+      org: s,
+      commit: s,
+      branch: s,
+      flow: s,
+      simulateDeployment: b,
+      forceDeployment: b
+    }
+
+    for (var e in ENVS) {
+      let env = ENVS[e]
+      let o = deployOpt(env, overrides)
+      for (var k in overrides) {
+        o.should.have.property(k, overrides[k](env))
+      }
+    }
+  })
+
+
 
 
 })

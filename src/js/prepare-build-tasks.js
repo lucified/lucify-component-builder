@@ -35,8 +35,6 @@ var options = parseArgs(process.argv, {default: {
   uglify: false,
   dev: true,
   packagePath: defaultPackagePath,
-  force: false,
-  simulate: false,
   bucket: null,
   profile: null
 }});
@@ -351,12 +349,6 @@ var prepareBuildTasks = function(gulp, opts) {
   opts.embedCodes = opts.embedCodes === false ? false : true;
 
   const deployOpt = require('./deploy-options')(getEnv(), opts);
-
-  if (!deployOpt) {
-      console.log("Error: No deploy options found for target '" + getEnv() + "'");
-      console.log(opts);
-      process.exit(1);
-  }
 
   context.assetPath = !deployOpt.assetContext ? "" : deployOpt.assetContext;
 
