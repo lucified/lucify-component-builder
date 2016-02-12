@@ -363,7 +363,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('data', buildTools.data.bind(null, context, opts.paths));
   gulp.task('styles', buildTools.styles.bind(null, context));
   gulp.task('manifest', buildTools.manifest.bind(null, context));
-  gulp.task('html', html.bind(null, context, opts, opts.baseUrl, deployOpt.assetContext));
+  gulp.task('html', html.bind(null, context, opts, deployOpt.baseUrl, deployOpt.assetContext));
   gulp.task('bundle-components', bundleComponents.bind(null, opts, context));
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);
