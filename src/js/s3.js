@@ -44,7 +44,14 @@ function publishToS3(bucket, simulate, force) {
   if (!force) {
     cache = first.pipe(publisher.cache())
   }
-  var last = (cache || first).pipe(awspublish.reporter())
+  var reporter = awspublish.reporter()
+  if(simulate === true) {
+    reporter = through2((file, enc, cb) => {
+      console.log(`s3://${bucket}/${file.s3.path}`)
+      cb(null, file)
+    })
+  }
+  var last = (cache || first).pipe(reporter)
   return [first, last]
 
 }
@@ -72,21 +79,21 @@ function createPublisher(bucket) {
 //
 // https://github.com/jussi-kalliokoski/gulp-awspublish-router/blob/master/lib/utils/initFile.js
 //
-function s3Init(file) {
+function s3Init(file, s3Folder) {
   if (file.s3) {
     return;
   }
 
   file.s3 = {};
   file.s3.headers = {};
-  file.s3.path = file.path.replace(file.base, "").replace(new RegExp("\\" + path.sep, "g"), "/");
+  file.s3.path = file.path.replace(file.base, s3Folder || "").replace(new RegExp("\\" + path.sep, "g"), "/");
 }
 
 /*
  * Get file streams for all entry points assets
  * (assets without rev urls)
  */
-function entryPointStream(sourceFolder) {
+function entryPointStream(sourceFolder, s3Folder) {
 
   if (!sourceFolder) {
     sourceFolder = 'dist';
@@ -95,6 +102,10 @@ function entryPointStream(sourceFolder) {
   return vfs.src(entryPoints, {
     cwd: sourceFolder
   })
+  .pipe(through2((file, enc, cb) => {
+      s3Init(file, s3Folder)
+      cb(null, file)
+  }))
 }
 
 /*
@@ -104,7 +115,7 @@ function entryPointStream(sourceFolder) {
  * targetFolder -- folder to publish into
  * maxAge -- expiry age for header
  */
-function assetStream(sourceFolder, maxAge) {
+function assetStream(sourceFolder, maxAge, s3Folder) {
 
   if (maxAge === null || !isFinite(maxAge)) {
     maxAge = 3600;
@@ -128,19 +139,16 @@ function assetStream(sourceFolder, maxAge) {
       cwd: sourceFolder
     })
     .pipe(through2((file, enc, cb) => {
-      s3Init(file)
+      s3Init(file, s3Folder)
       Object.assign(file.s3.headers, headers)
       cb(null, file)
     }))
 }
 
-module.exports = {
-  entryPointStream,
-  assetStream,
-  publishToS3,
-  publish: (entry, asset, bucket, simulate, force) => {
+function publishInSeries(streams, opt) {
 
-    // We want to construct a new stream that combines two others
+    opt = opt || {}
+    // We want to construct a new stream that combines others
     // sequentially. We pipe to it the first one, passing the option end: false,
     // listen for the 'end' event of the first stream and then pipe it the second one,
     // not passing the end option.
@@ -154,11 +162,15 @@ module.exports = {
     // before hashed assets would be bad -- JOJ
 
     //console.log('bucket', bucket, 'folder', folder, 'maxAge', maxAge, 'simulate', simulate, 'force', force, 'entry_', entry, 'asset_', asset_)
-    asset.once('end', () => entry.pipe(output))
+    console.log(streams.length)
+    for(var i = 0; i < streams.length - 1; i++) {
+      var nextStream = streams[i+1]
+      streams[i].once('end', () => nextStream.pipe(output))
+    }
 
-    var s3 = publishToS3(bucket, simulate, force) // we get the first and last segments of the pipeline
+    var s3 = publishToS3(opt.bucket || 'lucify-test-bucket', opt.simulateDeployment || false, opt.forceDeployment || false) // we get the first and last segments of the pipeline
 
-    var stream = asset
+    var stream = streams[0]
       .pipe(output, {
         end: false
       })
@@ -167,4 +179,22 @@ module.exports = {
     return s3[1]
 
   }
+
+function publish(opt) {
+
+    const fromFolder = opt.publishFromFolder
+    const asset = assetStream(fromFolder, opt.maxAge, opt.path)
+    const entry = entryPointStream(fromFolder, opt.path)
+
+    return publishInSeries([asset, entry], opt)
+
+}
+
+
+module.exports = {
+  entryPointStream,
+  assetStream,
+  publishToS3,
+  publishInSeries,
+  publish
 }

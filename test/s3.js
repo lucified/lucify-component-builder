@@ -62,7 +62,14 @@ describe("publish-stream", () => {
 
       }))
 
-    s3.publish(eStream, aStream, 'test', true, true)
+    const opt = {
+      simulateDeployment: true,
+      forceDeployment: true,
+      bucket: "lucify-test-bucket"
+    }
+    const streams = [aStream, eStream]
+    console.log(streams[0].pipe)
+    s3.publishInSeries(streams, opt)
       .pipe(debug())
       .pipe(es.writeArray((err, files) => {
           expect(err).not.to.exist;
@@ -98,7 +105,7 @@ describe("cache", () => {
         var entry = s3.entryPointStream('test/dist')
         var asset = s3.assetStream('test/dist')
 
-        var combinedStream = s3.publish(entry, asset, bucket)
+        var combinedStream = s3.publishInSeries([asset, entry], {bucket})
 
         var files = []
         return combinedStream
