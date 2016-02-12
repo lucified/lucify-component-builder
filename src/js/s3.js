@@ -177,8 +177,8 @@ function publishInSeries(streams, opt) {
 
 function publish(fromFolder, opt) {
 
-    const asset = assetStream(fromFolder, opt.maxAge, opt.path)
-    const entry = entryPointStream(fromFolder, opt.path)
+    const asset = assetStream(fromFolder, opt.maxAge)
+    const entry = entryPointStream(fromFolder)
 
     // It is important to do deploy in series to
     // achieve an "atomic" update. uploading index.html
