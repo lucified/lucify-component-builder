@@ -6,6 +6,11 @@ var request = require('request');
  */
 function githubDeploy(project, org, branch, env, flow, cb) {
 
+    if (process.env.FROM_HEAVEN && process.env.FROM_HEAVEN !== "false") {
+        console.log("Triggered by Heaven, not notifying deployment API");
+        cb();
+    }
+
     if (!process.env.GITHUB_TOKEN) {
         console.log("No github token defined, not notifying deployment API");
         cb();
