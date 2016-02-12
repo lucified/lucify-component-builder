@@ -38,7 +38,9 @@ describe("deploy options", () => {
       org: "overridden",
       commit: "overridden",
       branch: "overridden",
-      flow: "overridden"
+      flow: "overridden",
+      simulateDeployment: true,
+      forceDeployment: true
     }
     const o = deployOpt(ENVS.PRODUCTION, overrides)
     for (var k in overrides) {

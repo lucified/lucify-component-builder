@@ -9,22 +9,30 @@ var deployOptions = {}
 deployOptions[ENVS.PRODUCTION] = {
   bucket: 'lucify-prod',
   baseUrl: 'http://www.lucify.com/',
-  maxAge: 3600
+  maxAge: 3600,
+  simulateDeployment: false,
+  forceDeployment: false
 }
 deployOptions[ENVS.STAGING] = {
   bucket: 'lucify-staging',
   baseUrl: 'http://staging.lucify.com/',
-  maxAge: 0
+  maxAge: 0,
+  simulateDeployment: false,
+  forceDeployment: false
 }
 deployOptions[ENVS.DEVELOPMENT] = {
   bucket: 'lucify-dev',
   baseUrl: 'http://dev.lucify.com/',
-  maxAge: 0
+  maxAge: 0,
+  simulateDeployment: false,
+  forceDeployment: false
 }
 deployOptions[ENVS.TEST] = {
   bucket: 'lucify-development',
   baseUrl: 'http://lucify-development.s3-website-eu-west-1.amazonaws.com/',
-  maxAge: 0
+  maxAge: 0,
+  simulateDeployment: false,
+  forceDeployment: false
 }
 
 module.exports = function(env, opts_) {
@@ -55,6 +63,37 @@ module.exports = function(env, opts_) {
       return process.env.BUCKET;
     }
     return deployOptions[env].bucket;
+  }
+
+
+  function getSimulateDeployment() {
+    if (opts.simulateDeployment) {
+      return true;
+    }
+    if (process.env.SIMULATEDEPLOYMENT) {
+      return true;
+    }
+    return deployOptions[env].simulateDeployment;
+  }
+
+  function getForceDeployment() {
+    if (opts.forceDeployment) {
+      return true;
+    }
+    if (process.env.FORCEDEPLOYMENT) {
+      return true;
+    }
+    return deployOptions[env].forceDeployment;
+  }
+
+  function getPublishFromFolder() {
+    if (opts.publishFromFolder) {
+      return opts.publishFromFolder;
+    }
+    if (process.env.PUBLISHFROMFOLDER) {
+      return process.env.PUBLISHFROMFOLDER;
+    }
+    return deployOptions[env].publishFromFolder;
   }
 
   function getBaseUrl() {
@@ -154,6 +193,8 @@ module.exports = function(env, opts_) {
     commit: getCommit(),
     branch: getBranch(),
     flow: getFlow(),
+    simulateDeployment: getSimulateDeployment(),
+    forceDeployment: getForceDeployment(),
     env: env
   }
 }
