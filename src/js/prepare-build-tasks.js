@@ -14,11 +14,15 @@ var extend = require('object-extend');
 var request = require('request');
 var git = require('git-rev-sync');
 
+var s3 = require('./s3.js');
+const ENVS = require('./envs.js');
+const defaultArtifactFile = 'build-info.json';
+
 var buildTools = require('lucify-build-tools');
 var embedCode = require('lucify-commons/src/js/embed-code.js');
 
 var deployOptions = require('./deploy-options.js');
-
+var githubDeploy = require('./github-deploy.js');
 
 var src  = gulp.src;
 var dest = gulp.dest;
@@ -31,8 +35,6 @@ var options = parseArgs(process.argv, {default: {
   uglify: false,
   dev: true,
   packagePath: defaultPackagePath,
-  force: false,
-  simulate: false,
   bucket: null,
   profile: null
 }});
@@ -43,7 +45,7 @@ if (options.profile != null) {
 }
 
 
-var context = new buildTools.BuildContext(
+var context = require('./build-context.js')(
     options.dev, options.optimize, options.uglify);
 
 var packagePath = options.packagePath;
@@ -208,20 +210,23 @@ function bundleResize() {
 }
 
 
-function embedCodes(context, opts) {
+function embedCodes(context, opts, baseUrl, assetContext, cb) {
+  if (!opts.embedCodes) {
+     return cb();
+  }
   if (Array.isArray(opts.embedDefs)) {
       return mergeStream(opts.embedDefs.map(function(def) {
-        return embedCodesPage(context, opts.baseUrl, opts.assetContext, def.path);
+        return embedCodesPage(context, baseUrl, assetContext, def.path, cb);
       }));
   }
-  return embedCodesPage(context, opts.baseUrl, opts.assetContext, '');
+  return embedCodesPage(context, baseUrl, assetContext, '', cb);
 }
 
 
 /*
  * Generate embed codes
  */
-function embedCodesPage(context, baseUrl, assetContext, path) {
+function embedCodesPage(context, baseUrl, assetContext, path, cb) {
 
   // if baseUrl is not defined, this is not
   // intended to be embeddable, and there is
@@ -274,10 +279,18 @@ function setupDistBuild(cb) {
   cb();
 }
 
-function notify(opts, cb) {
-    var project = opts.deployOptions.getProject(opts);
-    var buildType = getBuildType();
-    var distUrl = getFullDistUrl(opts);
+
+function notify(project, org, branch, env, url, cb) {
+
+    // we still support also the legacy flowdock PUSH api
+    // notification, which will be delivered if a FLOW_TOKEN
+    // is defined.
+
+    if (!process.env.FLOW_TOKEN) {
+      cb();
+      return;
+    }
+
     var gitMessage = git.message();
 
     var options = {
@@ -288,10 +301,10 @@ function notify(opts, cb) {
         "source": "CircleCI",
         //"from_name": "Mr. Robot",
         "from_address": "deploy@lucify.com",
-        "subject": `Deployed ${project} to ${buildType}`,
-        "content": `<p>${gitMessage}</p> <p>${distUrl}</p>`,
+        "subject": `Deployed branch ${project}/${branch} to ${env}`,
+        "content": `<p>${gitMessage}</p> <p>${url}</p>`,
         "project": project,
-        "tags":  ["#deployment", `#${buildType}`]
+        "tags":  ["#deployment", `#${env}`]
       }
     }
     request(options, (error, res, body) => {
@@ -309,32 +322,21 @@ function notify(opts, cb) {
 }
 
 
-function getBuildType() {
-  return process.env.NODE_ENV ? process.env.NODE_ENV : "development";
+function getEnv() {
+  if(process.env.LUCIFY_ENV)
+    return process.env.LUCIFY_ENV
+  if(process.env.NODE_ENV)
+    return process.env.NODE_ENV
+  return ENVS.TEST;
 }
 
 
-function getDeployOptionsForTarget(opts) {
-  return opts.deployOptions.targets[getBuildType()];
-}
-
-
-function getFullDistUrl(opts) {
-  var to = getDeployOptionsForTarget(opts);
-  return to.baseUrl + to.getAssetContext(opts);
-}
-
-
-function getBucketForDistBuild(opts) {
-  return getDeployOptionsForTarget(opts).bucket;
-}
-
-
-function prepareDeployOptions(opts) {
-    if (!opts.deployOptions) {
-        opts.deployOptions = deployOptions;
-    }
-    opts.deployOptions = extend(deployOptions, opts.deployOptions);
+function writeBuildArtifact(url, fileName, cb) {
+   const fn = fileName || defaultArtifactFile
+   const folder = process.env.CIRCLE_ARTIFACTS
+   if(folder)
+     require('fs').writeFileSync(`${folder}/${fn}`, JSON.stringify({url: url}))
+   cb()
 }
 
 
@@ -343,20 +345,12 @@ var prepareBuildTasks = function(gulp, opts) {
       opts = {};
   }
 
-  prepareDeployOptions(opts);
+  // set default for embedCodes option to true
+  opts.embedCodes = opts.embedCodes === false ? false : true;
 
-  if (!getDeployOptionsForTarget(opts)) {
-      console.log("Error: No deploy options found for target '" + getBuildType() + "'");
-      console.log(opts);
-      process.exit(1);
-  }
+  const deployOpt = require('./deploy-options')(getEnv(), opts);
 
-
-  opts.assetContext = getDeployOptionsForTarget(opts).getAssetContext(opts);
-  opts.baseUrl = getDeployOptionsForTarget(opts).baseUrl;
-  opts.maxAge = getDeployOptionsForTarget(opts).maxAge;
-
-  context.assetPath = !opts.assetContext ? "" : opts.assetContext;
+  context.assetPath = !deployOpt.assetContext ? "" : deployOpt.assetContext;
 
   gulp.task('watch', function(cb) {
       gulp.watch('./**/*.scss', gulp.series('styles'));
@@ -369,15 +363,32 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('data', buildTools.data.bind(null, context, opts.paths));
   gulp.task('styles', buildTools.styles.bind(null, context));
   gulp.task('manifest', buildTools.manifest.bind(null, context));
-  gulp.task('html', html.bind(null, context, opts, opts.baseUrl, opts.assetContext));
+  gulp.task('html', html.bind(null, context, opts, opts.baseUrl, deployOpt.assetContext));
   gulp.task('bundle-components', bundleComponents.bind(null, opts, context));
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
   gulp.task('bundle-resize', bundleResize);
-  gulp.task('embed-codes', embedCodes.bind(null, context, opts));
+  gulp.task('embed-codes', embedCodes.bind(null, context, opts, deployOpt.baseUrl, deployOpt.assetContext));
   gulp.task('serve', buildTools.serve);
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
-  gulp.task('notify', notify.bind(null, opts));
+  gulp.task('notify', notify.bind(null, deployOpt.project,
+       deployOpt.org,
+       deployOpt.branch,
+       deployOpt.env,
+       deployOpt.url
+       )
+  );
+
+  gulp.task('build-artifact', writeBuildArtifact.bind(null, deployOpt.url, opts.artifactFile || defaultArtifactFile))
+
+  gulp.task('github-deploy', githubDeploy.bind(null,
+       deployOpt.project,
+       deployOpt.org,
+       deployOpt.branch,
+       deployOpt.env,
+       deployOpt.flow
+     )
+  );
 
   var buildTaskNames = [
     'images',
@@ -402,17 +413,8 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('default', gulp.series(
     'set-watch', 'build', 'watch', 'serve'));
 
-  //console.log(options)
-  gulp.task('s3-deploy', buildTools.s3.publish
-    .bind(null,
-      buildTools.s3.entryPointStream(opts.publishFromFolder),
-      buildTools.s3.assetStream(opts.publishFromFolder, opts.maxAge),
-      getBucketForDistBuild(opts),
-      options.simulate,
-      options.force
-    )
-  )
-  gulp.task('s3-deployandnotify', gulp.series('s3-deploy', 'notify'))
+  gulp.task('s3-deploy', s3.publish
+    .bind(null, opts.publishFromFolder, deployOpt))
 
 };
 

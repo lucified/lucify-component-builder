@@ -1,6 +1,7 @@
 #!/bin/bash
 
 cd test-projects
+export LUCIFY_ENV=development
 
 for i in $( ls ); do
     cd $i
@@ -11,6 +12,7 @@ for i in $( ls ); do
     fi
     npm test
     if [ $? != 0 ]; then
+      rm -rf dist
       echo "'npm run-script dist' failed for ${i}"
       exit 1
     fi
