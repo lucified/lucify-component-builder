@@ -413,17 +413,8 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('default', gulp.series(
     'set-watch', 'build', 'watch', 'serve'));
 
-  //console.log(options)
   gulp.task('s3-deploy', s3.publish
-    .bind(null,
-      s3.entryPointStream(opts.publishFromFolder),
-      s3.assetStream(opts.publishFromFolder, opts.maxAge),
-      deployOpt.bucket,
-      options.simulate,
-      options.force
-    )
-  )
-  gulp.task('s3-deployandnotify', gulp.series('s3-deploy', 'notify'))
+    .bind(null, opts.publishFromFolder, deployOpt))
 
 };
 

@@ -157,12 +157,7 @@ function publishInSeries(streams, opt) {
       objectMode: true
     })
 
-    // It is important to do deploy in series to
-    // achieve an "atomic" update. uploading index.html
-    // before hashed assets would be bad -- JOJ
 
-    //console.log('bucket', bucket, 'folder', folder, 'maxAge', maxAge, 'simulate', simulate, 'force', force, 'entry_', entry, 'asset_', asset_)
-    console.log(streams.length)
     for(var i = 0; i < streams.length - 1; i++) {
       var nextStream = streams[i+1]
       streams[i].once('end', () => nextStream.pipe(output))
@@ -180,11 +175,15 @@ function publishInSeries(streams, opt) {
 
   }
 
-function publish(opt) {
+function publish(fromFolder, opt) {
 
-    const fromFolder = opt.publishFromFolder
     const asset = assetStream(fromFolder, opt.maxAge, opt.path)
     const entry = entryPointStream(fromFolder, opt.path)
+
+    // It is important to do deploy in series to
+    // achieve an "atomic" update. uploading index.html
+    // before hashed assets would be bad -- JOJ
+
 
     return publishInSeries([asset, entry], opt)
 
