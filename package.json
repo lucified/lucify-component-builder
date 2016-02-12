@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "chai": "^1.9.1",
-    "chai-fs": "peterkc/chai-fs",
+    "chai-fs": "^0.1.0",
     "event-stream": "^3.3.2",
     "file-exists": "^1.0.0",
     "gulp-debug": "^2.1.2",
