@@ -23,4 +23,5 @@ rm -rf dist
 gulp github-deploy
 gulp dist
 gulp build-artifact
-gulp s3-deployandnotify
+gulp s3-deploy
+gulp notify
