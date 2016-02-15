@@ -1,7 +1,7 @@
 
 var gulp = require('gulp');
 var path = require('path');
-var through2   = require("through2");
+var through2   = require('through2');
 var $ = require('gulp-load-plugins')();
 var fs = require('fs');
 var mkpath = require('mkpath');
@@ -9,11 +9,10 @@ var del = require('del');
 var parseArgs = require('minimist');
 var deepcopy = require('deepcopy');
 var mergeStream = require('merge-stream');
-var replaceall = require("replaceall");
-var extend = require('object-extend');
+var replaceall = require('replaceall');
 var request = require('request');
 var git = require('git-rev-sync');
-
+var gutil = require('gulp-util');
 var s3 = require('./s3.js');
 const ENVS = require('./envs.js');
 const defaultArtifactFile = 'build-info.json';
@@ -21,7 +20,6 @@ const defaultArtifactFile = 'build-info.json';
 var buildTools = require('lucify-build-tools');
 var embedCode = require('lucify-commons/src/js/embed-code.js');
 
-var deployOptions = require('./deploy-options.js');
 var githubDeploy = require('./github-deploy.js');
 
 var src  = gulp.src;
@@ -40,7 +38,7 @@ var options = parseArgs(process.argv, {default: {
 }});
 
 if (options.profile != null) {
-  console.log("Using AWS profile " + options.profile);
+  gutil.log('Using AWS profile ' + options.profile);
   process.env['AWS_DEFAULT_PROFILE'] = options.profile;
 }
 
@@ -52,21 +50,21 @@ var packagePath = options.packagePath;
 
 
 String.prototype.endsWith = function(suffix) {
-    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+  return this.indexOf(suffix, this.length - suffix.length) !== -1;
 };
 
 
 function html(context, opts, baseUrl, assetContext) {
   if (Array.isArray(opts.pageDefs)) {
-      return mergeStream(opts.pageDefs.map(function(def) {
-        return htmlForPage(context, def, baseUrl, assetContext, true);
-      }));
+    return mergeStream(opts.pageDefs.map(function(def) {
+      return htmlForPage(context, def, baseUrl, assetContext, true);
+    }));
   }
 
   if (Array.isArray(opts.embedDefs)) {
-      return mergeStream(opts.embedDefs.map(function(def) {
-        return htmlForPage(context, def, baseUrl, assetContext, false);
-      }));
+    return mergeStream(opts.embedDefs.map(function(def) {
+      return htmlForPage(context, def, baseUrl, assetContext, false);
+    }));
   }
 
   return htmlForPage(context, opts.pageDef, baseUrl, assetContext, true);
@@ -80,10 +78,10 @@ function html(context, opts, baseUrl, assetContext) {
 function htmlForPage(context, pageDef, baseUrl, assetContext, rootRef) {
 
   function setImageUrl(def, imageType) {
-     if (def[imageType]) {
-       var key = def[imageType];
-       var filename = (context.assetManifest[key] != null) ? context.assetManifest[key] : key;
-       def[imageType] = baseUrl + assetContext + "images/" + filename;
+    if (def[imageType]) {
+      var key = def[imageType];
+      var filename = (context.assetManifest[key] != null) ? context.assetManifest[key] : key;
+      def[imageType] = baseUrl + assetContext + 'images/' + filename;
     }
   }
 
@@ -94,7 +92,7 @@ function htmlForPage(context, pageDef, baseUrl, assetContext, rootRef) {
     setImageUrl(def, 'openGraphImage');
     setImageUrl(def, 'schemaImage');
   } else {
-    def = {title: "Lucify component"};
+    def = {title: 'Lucify component'};
   }
 
   var jsFileName = rootRef ? 'index.js' : getJsFileName(pageDef);
@@ -105,7 +103,7 @@ function htmlForPage(context, pageDef, baseUrl, assetContext, rootRef) {
   def.url = baseUrl + assetContext + def.path.replace('/', '');
 
   if (!def.url.endsWith('/')) {
-    def.url = def.url + "/";
+    def.url = def.url + '/';
   }
 
   // by default, google analytics, riveted, etc are enabled
@@ -133,26 +131,26 @@ function htmlForPage(context, pageDef, baseUrl, assetContext, rootRef) {
 
 function bundleComponents(opts, context) {
   if (!opts.embedDefs) {
-      return createJsxAndBundle(opts, context, {
-          reactRouter: opts.reactRouter,
-          componentPath: 'index.js',
-          path: ''});
+    return createJsxAndBundle(opts, context, {
+      reactRouter: opts.reactRouter,
+      componentPath: 'index.js',
+      path: ''});
   }
   return mergeStream(opts.embedDefs.map(function(edef) {
-      return createJsxAndBundle(opts, context, edef);
+    return createJsxAndBundle(opts, context, edef);
   }));
 }
 
 
 function getJsFileName(edef) {
-    var ret = edef.path === '' ? 'index.js' : 'index' + replaceall('/', '-', edef.path) + '.js';
-    return ret;
+  var ret = edef.path === '' ? 'index.js' : 'index' + replaceall('/', '-', edef.path) + '.js';
+  return ret;
 }
 
 
 function getTempFileName(edef) {
-    var ret = edef.path === '' ? 'component.jsx' : 'component' + replaceall('/', '-', edef.path) + '.jsx';
-    return ret;
+  var ret = edef.path === '' ? 'component.jsx' : 'component' + replaceall('/', '-', edef.path) + '.jsx';
+  return ret;
 }
 
 
@@ -174,7 +172,7 @@ function generateJSX(reactRouter, componentPath, tempFileName) {
   var data = template.replace('%REPLACE%', componentPath)
     .replace('%BOOTSTRAPPER%', bootstrapper);
 
-  var destpath = "temp/";
+  var destpath = 'temp/';
   mkpath.sync(destpath);
   fs.writeFileSync(destpath + tempFileName, data);
   return src(j(packagePath, 'src', 'js', '*.jsx'))
@@ -187,9 +185,9 @@ function generateJSX(reactRouter, componentPath, tempFileName) {
  */
 function bundleComponent(destPath, outputFileName, tempFileName) {
   var opts = {
-      destPath: destPath,
-      outputFileName: outputFileName
-  }
+    destPath: destPath,
+    outputFileName: outputFileName
+  };
   return buildTools.bundle('temp/' + tempFileName, context, opts);
 }
 
@@ -212,12 +210,12 @@ function bundleResize() {
 
 function embedCodes(context, opts, baseUrl, assetContext, cb) {
   if (!opts.embedCodes) {
-     return cb();
+    return cb();
   }
   if (Array.isArray(opts.embedDefs)) {
-      return mergeStream(opts.embedDefs.map(function(def) {
-        return embedCodesPage(context, baseUrl, assetContext, def.path, cb);
-      }));
+    return mergeStream(opts.embedDefs.map(function(def) {
+      return embedCodesPage(context, baseUrl, assetContext, def.path, cb);
+    }));
   }
   return embedCodesPage(context, baseUrl, assetContext, '', cb);
 }
@@ -238,15 +236,15 @@ function embedCodesPage(context, baseUrl, assetContext, path, cb) {
 
   // for dev builds baseUrl is always localhost
   var urlPath = path.substring(1);
-  var embedUrl = context.dev ? ("http://localhost:3000/" + urlPath) : baseUrl + assetContext + urlPath;
-  var baseUrl = context.dev ? ("http://localhost:3000/") : baseUrl + assetContext;
+  var embedUrl = context.dev ? ('http://localhost:3000/' + urlPath) : baseUrl + assetContext + urlPath;
+  var embedBaseUrl = context.dev ? ('http://localhost:3000/') : baseUrl + assetContext;
 
   return src(j(packagePath, 'src', 'www', 'embed-codes.hbs'))
     .pipe(through2.obj(function(file, enc, _cb) {
       var params = {
-        scriptTagEmbedCode: embedCode.getScriptTagEmbedCode(baseUrl, embedUrl),
-        iFrameWithRemoteResizeEmbedCode: embedCode.getIFrameEmbedCodeWithRemoteResize(baseUrl, embedUrl),
-        iFrameWithInlineResizeEmbedCode: embedCode.getIFrameEmbedCodeWithInlineResize(baseUrl, embedUrl),
+        scriptTagEmbedCode: embedCode.getScriptTagEmbedCode(embedBaseUrl, embedUrl),
+        iFrameWithRemoteResizeEmbedCode: embedCode.getIFrameEmbedCodeWithRemoteResize(embedBaseUrl, embedUrl),
+        iFrameWithInlineResizeEmbedCode: embedCode.getIFrameEmbedCodeWithInlineResize(embedBaseUrl, embedUrl)
       };
       file.contents = new Buffer(
         context.hbs.renderSync(file.contents.toString(), params));
@@ -265,10 +263,10 @@ function setWatch(cb) {
 
 
 function prepareSkeleton(cb) {
-    mkpath.sync(j('temp', 'data-assets'));
-    mkpath.sync(j('temp', 'generated-images'));
-    mkpath.sync('build');
-    cb();
+  mkpath.sync(j('temp', 'data-assets'));
+  mkpath.sync(j('temp', 'generated-images'));
+  mkpath.sync('build');
+  cb();
 }
 
 
@@ -282,67 +280,67 @@ function setupDistBuild(cb) {
 
 function notify(project, org, branch, env, url, cb) {
 
-    // we still support also the legacy flowdock PUSH api
-    // notification, which will be delivered if a FLOW_TOKEN
-    // is defined.
+  // we still support also the legacy flowdock PUSH api
+  // notification, which will be delivered if a FLOW_TOKEN
+  // is defined.
 
-    if (!process.env.FLOW_TOKEN) {
-      cb();
-      return;
+  if (!process.env.FLOW_TOKEN) {
+    cb();
+    return;
+  }
+
+  var gitMessage = git.message();
+
+  var options = {
+    url: `https://api.flowdock.com/v1/messages/team_inbox/${process.env.FLOW_TOKEN}`,
+    method: 'POST',
+    json: true,
+    body: {
+      'source': 'CircleCI',
+      //"from_name": "Mr. Robot",
+      'from_address': 'deploy@lucify.com',
+      'subject': `Deployed branch ${project}/${branch} to ${env}`,
+      'content': `<p>${gitMessage}</p> <p>${url}</p>`,
+      'project': project,
+      'tags':  ['#deployment', `#${env}`]
     }
-
-    var gitMessage = git.message();
-
-    var options = {
-      url: `https://api.flowdock.com/v1/messages/team_inbox/${process.env.FLOW_TOKEN}`,
-      method: 'POST',
-      json: true,
-      body: {
-        "source": "CircleCI",
-        //"from_name": "Mr. Robot",
-        "from_address": "deploy@lucify.com",
-        "subject": `Deployed branch ${project}/${branch} to ${env}`,
-        "content": `<p>${gitMessage}</p> <p>${url}</p>`,
-        "project": project,
-        "tags":  ["#deployment", `#${env}`]
-      }
+  };
+  request(options, (error, res, body) => {
+    if(error) {
+      gutil.log(error);
+      return cb();
     }
-    request(options, (error, res, body) => {
-      if(error) {
-        console.log(error)
-        return cb()
-      }
-      if(res.statusCode != 200) {
-        console.log(`STATUS: ${res.statusCode}`);
-        console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-        console.log(`BODY: ${JSON.stringify(body)}`);
-      }
-      cb()
-    });
+    if(res.statusCode != 200) {
+      gutil.log(`STATUS: ${res.statusCode}`);
+      gutil.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+      gutil.log(`BODY: ${JSON.stringify(body)}`);
+    }
+    cb();
+  });
 }
 
 
 function getEnv() {
   if(process.env.LUCIFY_ENV)
-    return process.env.LUCIFY_ENV
+    return process.env.LUCIFY_ENV;
   if(process.env.NODE_ENV)
-    return process.env.NODE_ENV
+    return process.env.NODE_ENV;
   return ENVS.TEST;
 }
 
 
 function writeBuildArtifact(url, fileName, cb) {
-   const fn = fileName || defaultArtifactFile
-   const folder = process.env.CIRCLE_ARTIFACTS
-   if(folder)
-     require('fs').writeFileSync(`${folder}/${fn}`, JSON.stringify({url: url}))
-   cb()
+  const fn = fileName || defaultArtifactFile;
+  const folder = process.env.CIRCLE_ARTIFACTS;
+  if(folder)
+    require('fs').writeFileSync(`${folder}/${fn}`, JSON.stringify({url: url}));
+  cb();
 }
 
 
 var prepareBuildTasks = function(gulp, opts) {
   if (!opts) {
-      opts = {};
+    opts = {};
   }
 
   // set default for embedCodes option to true
@@ -350,11 +348,11 @@ var prepareBuildTasks = function(gulp, opts) {
 
   const deployOpt = require('./deploy-options')(getEnv(), opts);
 
-  context.assetPath = !deployOpt.assetContext ? "" : deployOpt.assetContext;
+  context.assetPath = !deployOpt.assetContext ? '' : deployOpt.assetContext;
 
   gulp.task('watch', function(cb) {
-      gulp.watch('./**/*.scss', gulp.series('styles'));
-      cb();
+    gulp.watch('./**/*.scss', gulp.series('styles'));
+    cb();
   });
 
   gulp.task('prepare-skeleton', prepareSkeleton);
@@ -379,7 +377,7 @@ var prepareBuildTasks = function(gulp, opts) {
        )
   );
 
-  gulp.task('build-artifact', writeBuildArtifact.bind(null, deployOpt.url, opts.artifactFile || defaultArtifactFile))
+  gulp.task('build-artifact', writeBuildArtifact.bind(null, deployOpt.url, opts.artifactFile || defaultArtifactFile));
 
   gulp.task('github-deploy', githubDeploy.bind(null,
        deployOpt.project,
@@ -414,9 +412,12 @@ var prepareBuildTasks = function(gulp, opts) {
     'set-watch', 'build', 'watch', 'serve'));
 
   gulp.task('s3-deploy', s3.publish
-    .bind(null, opts.publishFromFolder, deployOpt))
+    .bind(null, opts.publishFromFolder, deployOpt));
 
 };
 
 
 module.exports = prepareBuildTasks;
+
+
+

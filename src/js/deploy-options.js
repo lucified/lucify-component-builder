@@ -1,49 +1,49 @@
-"use strict";
+'use strict';
 
 var git = require('git-rev-sync');
 var name = require('project-name');
 var _ = require('lodash');
 
-const ENVS = require('./envs.js')
+const ENVS = require('./envs.js');
 
-var deployOptions = {}
+var deployOptions = {};
 deployOptions[ENVS.PRODUCTION] = {
   bucket: 'lucify-prod',
   baseUrl: 'http://www.lucify.com/',
   maxAge: 3600,
   simulateDeployment: false,
   forceDeployment: false
-}
+};
 deployOptions[ENVS.STAGING] = {
   bucket: 'lucify-staging',
   baseUrl: 'http://staging.lucify.com/',
   maxAge: 0,
   simulateDeployment: false,
   forceDeployment: false
-}
+};
 deployOptions[ENVS.DEVELOPMENT] = {
   bucket: 'lucify-dev',
   baseUrl: 'http://dev.lucify.com/',
   maxAge: 0,
   simulateDeployment: false,
   forceDeployment: false
-}
+};
 deployOptions[ENVS.TEST] = {
   bucket: 'lucify-development',
   baseUrl: 'http://lucify-development.s3-website-eu-west-1.amazonaws.com/',
   maxAge: 0,
   simulateDeployment: false,
   forceDeployment: false
-}
+};
 
 module.exports = function(env, opts_) {
 
-  let opts = opts_ || {}
+  let opts = opts_ || {};
 
   function getProject() {
-    let project = opts.project
+    let project = opts.project;
     if(_.isFunction(project)) {
-      project = project(env)
+      project = project(env);
     }
     if (_.isString(project)) {
       return project;
@@ -61,9 +61,9 @@ module.exports = function(env, opts_) {
   }
 
   function getBucket() {
-    let bucket = opts.bucket
+    let bucket = opts.bucket;
     if(_.isFunction(bucket)) {
-      bucket = bucket(env)
+      bucket = bucket(env);
     }
     if (_.isString(bucket)) {
       return bucket;
@@ -76,9 +76,9 @@ module.exports = function(env, opts_) {
 
 
   function getSimulateDeployment() {
-    let simulateDeployment = opts.simulateDeployment
+    let simulateDeployment = opts.simulateDeployment;
     if(_.isFunction(simulateDeployment)) {
-      simulateDeployment = simulateDeployment(env)
+      simulateDeployment = simulateDeployment(env);
     }
     if (_.isBoolean(simulateDeployment)) {
       return simulateDeployment;
@@ -90,9 +90,9 @@ module.exports = function(env, opts_) {
   }
 
   function getForceDeployment() {
-    let forceDeployment = opts.forceDeployment
+    let forceDeployment = opts.forceDeployment;
     if(_.isFunction(forceDeployment)) {
-      forceDeployment = forceDeployment(env)
+      forceDeployment = forceDeployment(env);
     }
     if (_.isBoolean(forceDeployment)) {
       return forceDeployment;
@@ -104,9 +104,9 @@ module.exports = function(env, opts_) {
   }
 
   function getBaseUrl() {
-    let baseUrl = opts.baseUrl
+    let baseUrl = opts.baseUrl;
     if(_.isFunction(baseUrl)) {
-      baseUrl = baseUrl(env)
+      baseUrl = baseUrl(env);
     }
     if (_.isString(baseUrl)) {
       return baseUrl;
@@ -118,9 +118,9 @@ module.exports = function(env, opts_) {
   }
 
   function getMaxAge() {
-    let maxAge = opts.maxAge
+    let maxAge = opts.maxAge;
     if(_.isFunction(maxAge)) {
-      maxAge = maxAge(env)
+      maxAge = maxAge(env);
     }
     if (_.isNumber(maxAge)) {
       return maxAge;
@@ -133,9 +133,9 @@ module.exports = function(env, opts_) {
 
 
   function getOrg() {
-    let org = opts.org
+    let org = opts.org;
     if(_.isFunction(org)) {
-      org = org(env)
+      org = org(env);
     }
     if (_.isString(org)) {
       return org;
@@ -150,9 +150,9 @@ module.exports = function(env, opts_) {
   }
 
   function getFlow() {
-    let flow = opts.flow
+    let flow = opts.flow;
     if(_.isFunction(flow)) {
-      flow = flow(env)
+      flow = flow(env);
     }
     if (_.isString(flow)) {
       return flow;
@@ -164,9 +164,9 @@ module.exports = function(env, opts_) {
   }
 
   function getCommit() {
-    let commit = opts.commit
+    let commit = opts.commit;
     if(_.isFunction(commit)) {
-      commit = commit(env)
+      commit = commit(env);
     }
     if (_.isString(commit)) {
       return commit;
@@ -181,9 +181,9 @@ module.exports = function(env, opts_) {
   }
 
   function getBranch() {
-    let branch = opts.branch
+    let branch = opts.branch;
     if(_.isFunction(branch)) {
-      branch = branch(env)
+      branch = branch(env);
     }
     if (_.isString(branch)) {
       return branch;
@@ -198,9 +198,9 @@ module.exports = function(env, opts_) {
   }
 
   function getAssetContext() {
-    let assetContext = opts.assetContext
+    let assetContext = opts.assetContext;
     if(_.isFunction(assetContext)) {
-      assetContext = assetContext(env)
+      assetContext = assetContext(env);
       if (_.isString(assetContext)) {
         return assetContext;
       }
@@ -213,12 +213,12 @@ module.exports = function(env, opts_) {
     var branch = getBranch();
     var path = `${project}-${branch}`;
     path += getCommit() ? `-${getCommit().substr(0, 7)}` : '';
-    path += "/";
+    path += '/';
 
     return path;
   }
 
-  if (!deployOptions[env]) throw new Error(`deploy-options: unknown environment ${env}`)
+  if (!deployOptions[env]) throw new Error(`deploy-options: unknown environment ${env}`);
 
   return {
     bucket: getBucket(),
@@ -235,6 +235,6 @@ module.exports = function(env, opts_) {
     simulateDeployment: getSimulateDeployment(),
     forceDeployment: getForceDeployment(),
     env: env
-  }
-}
+  };
+};
 

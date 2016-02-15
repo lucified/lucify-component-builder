@@ -1,17 +1,18 @@
+
 var awspublish = require('gulp-awspublish');
-var mergeStream = require('merge-stream');
-var rename = require('gulp-rename');
 var del = require('del');
 var vfs = require('vinyl-fs');
-var path = require('path')
-var through2 = require('through2').obj
+var path = require('path');
+var through2 = require('through2').obj;
+var gutil = require('gulp-util');
+
 
 var entryPoints = [
   '**/*.html',
   '**/resize.js',
   '**/embed.js',
   '*.{png,ico}'
-]
+];
 
 /*
  * Publish the given source files to AWS
@@ -29,7 +30,7 @@ function publishToS3(bucket, simulate, force) {
 
   var publisher = createPublisher(bucket);
 
-  console.log(`Publishing to ${bucket}`)
+  gutil.log(`Publishing to ${bucket}`);
 
   // We want to construct a pipeline that consists of multiple segments piped together.
   // The consumer of this pipeline needs to be able to pipe into its first segment
@@ -39,20 +40,20 @@ function publishToS3(bucket, simulate, force) {
   var first = publisher.publish({}, {
     force: force,
     simulate: simulate === true ? true : false
-  })
-  var cache = null
+  });
+  var cache = null;
   if (!force) {
-    cache = first.pipe(publisher.cache())
+    cache = first.pipe(publisher.cache());
   }
-  var reporter = awspublish.reporter()
+  var reporter = awspublish.reporter();
   if(simulate === true) {
     reporter = through2((file, enc, cb) => {
-      console.log(`s3://${bucket}/${file.s3.path}`)
-      cb(null, file)
-    })
+      gutil.log(`s3://${bucket}/${file.s3.path}`);
+      cb(null, file);
+    });
   }
-  var last = (cache || first).pipe(reporter)
-  return [first, last]
+  var last = (cache || first).pipe(reporter);
+  return [first, last];
 
 }
 
@@ -86,7 +87,7 @@ function s3Init(file, s3Folder) {
 
   file.s3 = {};
   file.s3.headers = {};
-  file.s3.path = file.path.replace(file.base, s3Folder || "").replace(new RegExp("\\" + path.sep, "g"), "/");
+  file.s3.path = file.path.replace(file.base, s3Folder || '').replace(new RegExp('\\' + path.sep, 'g'), '/');
 }
 
 /*
@@ -103,9 +104,9 @@ function entryPointStream(sourceFolder, s3Folder) {
     cwd: sourceFolder
   })
   .pipe(through2((file, enc, cb) => {
-      s3Init(file, s3Folder)
-      cb(null, file)
-  }))
+    s3Init(file, s3Folder);
+    cb(null, file);
+  }));
 }
 
 /*
@@ -121,7 +122,7 @@ function assetStream(sourceFolder, maxAge, s3Folder) {
     maxAge = 3600;
   }
 
-  console.log("Using max-age " + maxAge);
+  gutil.log('Using max-age ' + maxAge);
 
   if (!sourceFolder) {
     sourceFolder = 'dist';
@@ -132,60 +133,60 @@ function assetStream(sourceFolder, maxAge, s3Folder) {
   };
 
   // Select everything BUT the entrypoints
-  var src = entryPoints.map(f => "!" + f)
-  src.unshift('**/*.*')
+  var src = entryPoints.map(f => '!' + f);
+  src.unshift('**/*.*');
 
   return vfs.src(src, {
-      cwd: sourceFolder
-    })
+    cwd: sourceFolder
+  })
     .pipe(through2((file, enc, cb) => {
-      s3Init(file, s3Folder)
-      Object.assign(file.s3.headers, headers)
-      cb(null, file)
-    }))
+      s3Init(file, s3Folder);
+      Object.assign(file.s3.headers, headers);
+      cb(null, file);
+    }));
 }
 
 function publishInSeries(streams, opt) {
 
-    opt = opt || {}
-    // We want to construct a new stream that combines others
-    // sequentially. We pipe to it the first one, passing the option end: false,
-    // listen for the 'end' event of the first stream and then pipe it the second one,
-    // not passing the end option.
+  opt = opt || {};
+  // We want to construct a new stream that combines others
+  // sequentially. We pipe to it the first one, passing the option end: false,
+  // listen for the 'end' event of the first stream and then pipe it the second one,
+  // not passing the end option.
 
-    var output = new require('stream').PassThrough({
-      objectMode: true
-    })
+  var output = new require('stream').PassThrough({
+    objectMode: true
+  });
 
 
-    for(var i = 0; i < streams.length - 1; i++) {
-      var nextStream = streams[i+1]
-      streams[i].once('end', () => nextStream.pipe(output))
-    }
-
-    var s3 = publishToS3(opt.bucket || 'lucify-test-bucket', opt.simulateDeployment || false, opt.forceDeployment || false) // we get the first and last segments of the pipeline
-
-    var stream = streams[0]
-      .pipe(output, {
-        end: false
-      })
-      .pipe(s3[0])
-
-    return s3[1]
-
+  for (var i = 0; i < streams.length - 1; i++) {
+    var nextStream = streams[i+1];
+    streams[i].once('end', () => nextStream.pipe(output));
   }
+
+  var s3 = publishToS3(opt.bucket || 'lucify-test-bucket', opt.simulateDeployment || false, opt.forceDeployment || false); // we get the first and last segments of the pipeline
+
+  streams[0]
+    .pipe(output, {
+      end: false
+    })
+    .pipe(s3[0]);
+
+  return s3[1];
+
+}
 
 function publish(fromFolder, opt) {
 
-    const asset = assetStream(fromFolder, opt.maxAge)
-    const entry = entryPointStream(fromFolder)
+  const asset = assetStream(fromFolder, opt.maxAge);
+  const entry = entryPointStream(fromFolder);
 
-    // It is important to do deploy in series to
-    // achieve an "atomic" update. uploading index.html
-    // before hashed assets would be bad -- JOJ
+  // It is important to do deploy in series to
+  // achieve an "atomic" update. uploading index.html
+  // before hashed assets would be bad -- JOJ
 
 
-    return publishInSeries([asset, entry], opt)
+  return publishInSeries([asset, entry], opt);
 
 }
 
@@ -196,4 +197,5 @@ module.exports = {
   publishToS3,
   publishInSeries,
   publish
-}
+};
+

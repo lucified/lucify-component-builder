@@ -1,8 +1,8 @@
 
 module.exports = Object.freeze({
-  TEST: "test",
-  STAGING: "staging",
-  PRODUCTION: "production",
-  DEVELOPMENT: "development"
-})
+  TEST: 'test',
+  STAGING: 'staging',
+  PRODUCTION: 'production',
+  DEVELOPMENT: 'development'
+});
 

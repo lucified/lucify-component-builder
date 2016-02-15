@@ -8,7 +8,7 @@ var BuildContext = function(dev, uglify, optimize, destPath) {
   this.initHandleBars();
   this.uglify = uglify;
   this.optimize = optimize;
-  this.assetPath = "";
+  this.assetPath = '';
 
   if (!destPath) {
     this.destPath = this.dev ? 'build' : 'dist';
@@ -20,7 +20,7 @@ var BuildContext = function(dev, uglify, optimize, destPath) {
 
 BuildContext.prototype.initHandleBars = function() {
 
-  hbs.registerHelper("assetPath", function(key) {
+  hbs.registerHelper('assetPath', function(key) {
     var paths = this.assetManifest;
     if (!this.dev) {
       return new hbs.SafeString(this.assetPath + (paths[key] || key));
@@ -83,4 +83,4 @@ function relPath(base, filePath) {
 }
 
 
-module.exports = (dev, uglify, optimize, destPath) => new BuildContext(dev, uglify, optimize, destPath)
+module.exports = (dev, uglify, optimize, destPath) => new BuildContext(dev, uglify, optimize, destPath);
