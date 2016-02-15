@@ -23,8 +23,6 @@ var pageDefUtils = require('./page-def-utils.js');
 
 var githubDeploy = require('./github-deploy.js');
 
-var src  = gulp.src;
-var dest = gulp.dest;
 var j = path.join;
 
 
@@ -82,8 +80,8 @@ function bundleComponents(opts, context) {
 
 
 
-function getTempFileName(edef) {
-  var ret = edef.path === '' ? 'component.jsx' : 'component' + replaceall('/', '-', edef.path) + '.jsx';
+function getTempFileName(componentPath) {
+  var ret = componentPath === '' ? 'component.jsx' : 'component' + replaceall('/', '-', componentPath) + '.jsx';
   return ret;
 }
 
@@ -102,16 +100,23 @@ function createJsxAndBundle(destPath, componentPath, reactRouter, pageDefs, watc
   var tempFileName = getTempFileName(componentPath);
   generateJSX(reactRouter, componentPath, tempFileName);
   var entryPoint = './temp/' + tempFileName;
-  return bundleWebpack(
-      entryPoint,
-      null,
-      destPath,
-      pageDefs,
-      watch,
-      assetContext,
-      babelPaths,
-      callback);
+
+  gulp.src('./react-boostrap/*')
+    .pipe(gulp.dest('temp'))
+    .on('end', function() {
+      bundleWebpack(
+        entryPoint,
+        null,
+        destPath,
+        pageDefs,
+        watch,
+        assetContext,
+        babelPaths,
+        callback);
+    }
+  );
 }
+
 var createJsxAndBundlePromisified = Promise.promisify(createJsxAndBundle);
 
 
@@ -120,9 +125,11 @@ var createJsxAndBundlePromisified = Promise.promisify(createJsxAndBundle);
  * component at given path as an embeddable component
  */
 function generateJSX(reactRouter, componentPath, tempFileName) {
-  var bootstrapper = require.resolve('./react-bootstrap/bootstrap-component.jsx');
+  var bootstrapper = './bootstrap-component.jsx';
+  //var bootstrapper = require.resolve('./react-bootstrap/bootstrap-component.jsx');
   if (reactRouter) {
-    bootstrapper = require.resolve('./react-bootstrap/bootstrap-react-router-component.jsx');
+    bootstrapper = './bootstrap-react-router-component.jsx';
+    //bootstrapper = require.resolve('./react-bootstrap/bootstrap-react-router-component.jsx');
   }
   var templateFile = require.resolve('./react-bootstrap/component-template.jsx');
   var template = fs.readFileSync(templateFile, 'utf8');
@@ -302,7 +309,7 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('bundle-components', bundleComponents.bind(null, opts, context, deployOpt.assetContext));
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap.bind(null, context, deployOpt.assetContext));
   gulp.task('bundle-resize', bundleResize.bind(null, context, opts.assetContext));
-  gulp.task('embed-codes', embedCodeUtils.embedCodes.bind(null, context, opts, deployOpt.assetContext));
+  gulp.task('embed-codes', embedCodeUtils.embedCodes.bind(null, context, opts, deployOpt.baseUrl, deployOpt.assetContext));
   gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
   gulp.task('notify', notify.bind(null, deployOpt.project,

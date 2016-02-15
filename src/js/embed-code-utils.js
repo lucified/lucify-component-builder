@@ -9,13 +9,17 @@ var src  = gulp.src;
 var dest = gulp.dest;
 
 
-function embedCodes(context, opts, assetContext) {
+function embedCodes(context, opts, baseUrl, assetContext, cb) {
+  if (!opts.embedCodes) {
+    return cb();
+  }
+
   if (Array.isArray(opts.embedDefs)) {
     return mergeStream(opts.embedDefs.map(function(def) {
-      return embedCodesPage(context, opts.baseUrl, assetContext, def.path);
+      return embedCodesPage(context, baseUrl, assetContext, def.path, cb);
     }));
   }
-  return embedCodesPage(context, opts.baseUrl, assetContext, '');
+  return embedCodesPage(context, baseUrl, assetContext, '', cb);
 }
 
 
@@ -23,14 +27,6 @@ function embedCodes(context, opts, assetContext) {
  * Generate embed codes
  */
 function embedCodesPage(context, baseUrl, assetContext, path, cb) {
-
-  // if baseUrl is not defined, this is not
-  // intended to be embeddable, and there is
-  // no need to generate embed codes
-  if (!baseUrl) {
-    cb();
-    return;
-  }
 
   // for dev builds baseUrl is always localhost
   var urlPath = path.substring(1) + '/';
