@@ -88,6 +88,8 @@ describe("deploy options", () => {
 
 describe("github-deploy", done => {
 
+
+
   xit("works", done => {
     const deployOpt = require('../src/js/deploy-options.js')(ENVS.TEST)
     let githubDeploy = require('../src/js/github-deploy.js')
@@ -97,6 +99,39 @@ describe("github-deploy", done => {
         done(e)
       }
       inspect(o)
+      done()
+    })
+  })
+
+
+  it("is not called when FROM_HEAVEN is set", done => {
+    const deployOpt = require('../src/js/deploy-options.js')(ENVS.TEST)
+    let githubDeploy = require('../src/js/github-deploy.js')
+    process.env.FROM_HEAVEN = 1
+    delete process.env.GITHUB_TOKEN
+    githubDeploy(deployOpt.project, deployOpt.org, deployOpt.branch, deployOpt.env, deployOpt.flow, (e, o) => {
+      if(e) {
+        inspect(e.options)
+        done(e)
+      }
+      expect(o).to.exist
+      expect(o).to.equal("interrupted")
+      done()
+    })
+  })
+
+   it("is not called when GITHUB_TOKEN is not set", done => {
+    const deployOpt = require('../src/js/deploy-options.js')(ENVS.TEST)
+    let githubDeploy = require('../src/js/github-deploy.js')
+    delete process.env.FROM_HEAVEN
+    delete process.env.GITHUB_TOKEN
+    githubDeploy(deployOpt.project, deployOpt.org, deployOpt.branch, deployOpt.env, deployOpt.flow, (e, o) => {
+      if(e) {
+        inspect(e.options)
+        done(e)
+      }
+      expect(o).to.exist
+      expect(o).to.equal("interrupted")
       done()
     })
   })
