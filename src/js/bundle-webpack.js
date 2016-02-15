@@ -144,13 +144,31 @@ function devServerBundle(config, destPath) {
       contentBase: destPath,
       noInfo: false,
       hot: options.hot,
-      colors: true
+      colors: true,
+      quiet: false,
+      stats: {colors: true, chunks: false, chunkOrigins: false,
+        chunkModules: false, errorDetails: false, source: false,
+        reasons: false, children: false, modules: false,
+        version: false, hash: false, timings: false, assets: false}
   }).listen(3000, "localhost", function(err) {
-        if(err) {
-          throw new gutil.PluginError("webpack-dev-server", err);
-        }
-        // keep the server alive or continue?
-        // callback();
+
+    // this is only run once after the
+    // server has started
+    //
+    // it is unclear when err == true, at least
+    // jsx syntax errors will not cause it
+    // probably it may be caused by some configuration
+    // problems
+    //
+    // ( webpack-dev-server is writing jsx syntax errors etc
+    // to the console directly on its own )
+    //
+
+      if(err) {
+        throw new gutil.PluginError("webpack-dev-server", err);
+      }
+    // keep the server alive or continue?
+    // callback();
   });
 }
 
