@@ -44,9 +44,7 @@
     "mkpath": "^0.1.0",
     "object-extend": "^0.5.0",
     "project-name": "^0.2.4",
-    "replaceall": "^0.1.6",
     "request": "^2.69.0",
-    "through2": "^2.0.0",
     "vinyl-fs": "^2.3.1",
     "lodash": "^4.3.0"
   },
