@@ -1,7 +1,9 @@
 
 build/
 dist
-node_modules/
+node_modules/*
+!node_modules/module1
+temp/*.js
 temp/*.jsx
 temp/asset-manifest.json
 .awspublish*

@@ -1,6 +1,6 @@
 {
   "name": "lucify-component-builder",
-  "version": "0.2.17",
+  "version": "0.3.2",
   "description": "Utility for building and publishing convenient distributions of React components",
   "main": "index.js",
   "engines": {
@@ -17,43 +17,56 @@
     "lucify-deploy": "./src/lucify-deploy.bash"
   },
   "license": "MIT",
+  "//0": "Note that webpack, etc are needed in dependencies, not devDependencies",
+  "//1": "When developing another project depending on lucify-component-builder, ",
+  "//2": "npm install for the project will install only the regular dependencies for ",
+  "//3": "lucify-component-builder. In lucify-component-builder, devDepedencies",
+  "//4": "should include only dependencies needed only for testing ",
+  "//5": "lucify-component-builder",
   "dependencies": {
-    "babelify": "^7.2.0",
-    "deepcopy": "^0.5.0",
+    "babel-core": "^6.4.0",
+    "babel-loader": "^6.2.1",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-react": "^6.3.13",
+    "babel-preset-stage-0": "^6.3.13",
+    "bluebird": "^3.1.1",
+    "css-loader": "^0.23.1",
+    "deepcopy": "^0.6.1",
     "del": "^2.0.2",
+    "file-loader": "^0.8.4",
     "git-rev-sync": "^1.4.0",
     "gulp": "gulpjs/gulp#4.0",
     "gulp-awspublish": "^3.0.1",
-    "gulp-load-plugins": "^0.10.0",
+    "gulp-load-plugins": "^1.2.0",
     "gulp-notify": "^2.2.0",
     "gulp-rename": "^1.2.2",
     "gulp-util": "^3.0.7",
     "handlebars": "^4.0.5",
-    "lucify-build-tools": "~0.3.1",
+    "handlebars-loader": "^1.1.4",
+    "html-webpack-plugin": "^2.8.2",
+    "lodash": "^4.4.0",
     "lucify-commons": "~0.2.3",
     "merge-stream": "^1.0.0",
     "minimist": "^1.2.0",
-    "mkpath": "^0.1.0",
+    "mkpath": "^1.0.0",
     "object-extend": "^0.5.0",
     "project-name": "^0.2.4",
-    "query-string": "^2.4.1",
     "replaceall": "^0.1.6",
     "request": "^2.69.0",
+    "sass-loader": "^3.1.2",
+    "style-loader": "^0.13.0",
     "through2": "^2.0.0",
+    "url-loader": "^0.5.6",
     "vinyl-fs": "^2.3.1",
-    "lodash": "^4.3.0"
+    "webpack": "^1.12.2",
+    "webpack-dev-server": "^1.12.0"
   },
   "devDependencies": {
-    "chai": "^1.9.1",
+    "chai": "^1.10.0",
     "chai-fs": "^0.1.0",
     "event-stream": "^3.3.2",
-    "file-exists": "^1.0.0",
     "gulp-debug": "^2.1.2",
-    "mocha": "^2.4.5"
-  },
-  "browserify": {
-    "transform": [
-      "babelify"
-    ]
+    "mocha": "^2.4.5",
+    "query-string": "^3.0.0"
   }
 }

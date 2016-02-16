@@ -1,14 +1,10 @@
 
 var gulp = require('gulp');
 var path = require('path');
-var through2   = require('through2');
-var $ = require('gulp-load-plugins')();
 var fs = require('fs');
 var mkpath = require('mkpath');
 var del = require('del');
 var parseArgs = require('minimist');
-var deepcopy = require('deepcopy');
-var mergeStream = require('merge-stream');
 var replaceall = require('replaceall');
 var request = require('request');
 var git = require('git-rev-sync');
@@ -16,23 +12,30 @@ var gutil = require('gulp-util');
 var s3 = require('./s3.js');
 const ENVS = require('./envs.js');
 const defaultArtifactFile = 'build-info.json';
+var Promise = require('bluebird');
 
-var buildTools = require('lucify-build-tools');
-var embedCode = require('lucify-commons/src/js/embed-code.js');
+//var buildTools = require('lucify-build-tools');
+var bundleWebpack = require('./bundle-webpack.js');
+
+var embedCodeUtils = require('./embed-code-utils.js');
+var pageDefUtils = require('./page-def-utils.js');
 
 var githubDeploy = require('./github-deploy.js');
 
-var src  = gulp.src;
-var dest = gulp.dest;
 var j = path.join;
 
-var defaultPackagePath = j('node_modules', 'lucify-component-builder');
+
+//
+// Detect options and prepare build context accordingly
+// ----------------------------------------------------
+//
 
 var options = parseArgs(process.argv, {default: {
   optimize: false,
   uglify: false,
   dev: true,
-  packagePath: defaultPackagePath,
+  force: false,
+  simulate: false,
   bucket: null,
   profile: null
 }});
@@ -42,124 +45,77 @@ if (options.profile != null) {
   process.env['AWS_DEFAULT_PROFILE'] = options.profile;
 }
 
-
 var context = require('./build-context.js')(
     options.dev, options.optimize, options.uglify);
 
-var packagePath = options.packagePath;
 
+//
+// Private functions
+// -----------------
+//
 
+function getTempFileName(path) {
+  var ret = path === '' ? 'component.jsx' : 'component'
+    + replaceall('/', '-', path);
+    //+ replaceall('/', '-', path) + '.jsx';
+  return ret;
+}
 String.prototype.endsWith = function(suffix) {
   return this.indexOf(suffix, this.length - suffix.length) !== -1;
 };
 
 
-function html(context, opts, baseUrl, assetContext) {
-  if (Array.isArray(opts.pageDefs)) {
-    return mergeStream(opts.pageDefs.map(function(def) {
-      return htmlForPage(context, def, baseUrl, assetContext, true);
-    }));
-  }
 
-  if (Array.isArray(opts.embedDefs)) {
-    return mergeStream(opts.embedDefs.map(function(def) {
-      return htmlForPage(context, def, baseUrl, assetContext, false);
-    }));
-  }
+function getTempFileName(componentPath) {
+  var ret = componentPath === '' ? 'component.jsx' : 'component' + replaceall('/', '-', componentPath) + '.jsx';
+  return ret;
+}
 
-  return htmlForPage(context, opts.pageDef, baseUrl, assetContext, true);
+/*
+ * Copy bootstrap JSX files to the project's temp directory
+ *
+ * We cannot only set up the entry point and make it reference
+ * resources via require('lucify-component-builder/...'), because
+ * resolving those requires will not work for the test-projects,
+ * which have a symlinked lucify-component-builder in their node_modules.
+ *
+ * The reason why that does not work is that require() uses the realPath
+ *
+ *
+ */
+function copyTempJsx() {
+  return gulp.src(__dirname + '/react-bootstrap/*.jsx')
+    .pipe(gulp.dest('temp'));
 }
 
 
 /*
- * Create index.html
- * with appropriate metadata
+ * Create JSX and run webpack to create the associated bundle
+ *
+ * destPath      -- path below which all files are created
+ * componentPath -- path to React component to be bundled
+ * reactRouter   -- enable react-router
+ * pageDefs      -- page definitions for creating associated html files
+ * watch         -- start watching with webback-dev-server
+ *
  */
-function htmlForPage(context, pageDef, baseUrl, assetContext, rootRef) {
+function createJsxAndBundle(destPath, componentPath, reactRouter, pageDefs, watch, assetContext, babelPaths, callback) {
+  var tempFileName = getTempFileName(componentPath);
+  generateJSX(reactRouter, componentPath, tempFileName);
+  var entryPoint = './temp/' + tempFileName;
 
-  function setImageUrl(def, imageType) {
-    if (def[imageType]) {
-      var key = def[imageType];
-      var filename = (context.assetManifest[key] != null) ? context.assetManifest[key] : key;
-      def[imageType] = baseUrl + assetContext + 'images/' + filename;
-    }
-  }
-
-  var def;
-  if (pageDef != null) {
-    def = deepcopy(pageDef);
-    setImageUrl(def, 'twitterImage');
-    setImageUrl(def, 'openGraphImage');
-    setImageUrl(def, 'schemaImage');
-  } else {
-    def = {title: 'Lucify component'};
-  }
-
-  var jsFileName = rootRef ? 'index.js' : getJsFileName(pageDef);
-  def.jsResolvedFileName = context.assetManifest[jsFileName] || jsFileName;
-
-  // default subpath by default
-  def.path = def.path != null ? def.path : '';
-  def.url = baseUrl + assetContext + def.path.replace('/', '');
-
-  if (!def.url.endsWith('/')) {
-    def.url = def.url + '/';
-  }
-
-  // by default, google analytics, riveted, etc are enabled
-  def.googleAnalytics = def.googleAnalytics === false ? false : true;
-  def.googleAnalyticsSendPageView = def.googleAnalyticsSendPageView === false ? false : true;
-
-  def.riveted = def.riveted === false ? false : true;
-  def.adsByGoogle = def.adsByGoogle === false ? false : true;
-  def.iFrameResize = def.iFrameResize === false ? false : true;
-  def.rootRef = rootRef;
-
-  return src(j(packagePath, 'src', 'www', 'embed.hbs'))
-    .pipe(through2.obj(function(file, enc, _cb) {
-      file.contents = new Buffer(
-        context.hbs.renderSync(file.contents.toString(), def));
-      //file.path = file.path.replace(/\.hbs$/,'.html')
-      this.push(file);
-      _cb();
-    }))
-    //.pipe($.minifyHtml())
-    .pipe($.rename('index.html'))
-    .pipe(dest(context.destPath + def.path));
+  bundleWebpack(
+    entryPoint,
+    null,
+    destPath,
+    pageDefs,
+    watch,
+    assetContext,
+    babelPaths,
+    callback);
 }
 
-
-function bundleComponents(opts, context) {
-  if (!opts.embedDefs) {
-    return createJsxAndBundle(opts, context, {
-      reactRouter: opts.reactRouter,
-      componentPath: 'index.js',
-      path: ''});
-  }
-  return mergeStream(opts.embedDefs.map(function(edef) {
-    return createJsxAndBundle(opts, context, edef);
-  }));
-}
-
-
-function getJsFileName(edef) {
-  var ret = edef.path === '' ? 'index.js' : 'index' + replaceall('/', '-', edef.path) + '.js';
-  return ret;
-}
-
-
-function getTempFileName(edef) {
-  var ret = edef.path === '' ? 'component.jsx' : 'component' + replaceall('/', '-', edef.path) + '.jsx';
-  return ret;
-}
-
-
-function createJsxAndBundle(opts, context, edef) {
-  var destPath = context.destPath + edef.path;
-  return mergeStream(
-      generateJSX(edef.reactRouter, edef.componentPath, getTempFileName(edef)),
-      bundleComponent(destPath, getJsFileName(edef), getTempFileName(edef)));
-}
+var createJsxAndBundlePromisified = Promise.promisify(createJsxAndBundle);
 
 
 /*
@@ -167,101 +123,90 @@ function createJsxAndBundle(opts, context, edef) {
  * component at given path as an embeddable component
  */
 function generateJSX(reactRouter, componentPath, tempFileName) {
-  var bootstrapper = reactRouter === true ? 'bootstrap-react-router-component' : 'bootstrap-component';
-  var template = fs.readFileSync(j(packagePath, 'src', 'js', 'component-template.jsx'), 'utf8');
+  var bootstrapper = './bootstrap-component.jsx';
+  //var bootstrapper = require.resolve('./react-bootstrap/bootstrap-component.jsx');
+  if (reactRouter) {
+    bootstrapper = './bootstrap-react-router-component.jsx';
+    //bootstrapper = require.resolve('./react-bootstrap/bootstrap-react-router-component.jsx');
+  }
+  var templateFile = require.resolve('./react-bootstrap/component-template.jsx');
+  var template = fs.readFileSync(templateFile, 'utf8');
   var data = template.replace('%REPLACE%', componentPath)
     .replace('%BOOTSTRAPPER%', bootstrapper);
-
   var destpath = 'temp/';
   mkpath.sync(destpath);
   fs.writeFileSync(destpath + tempFileName, data);
-  return src(j(packagePath, 'src', 'js', '*.jsx'))
-    .pipe(dest(destpath));
 }
 
 
-/*
- * Bundle the component itself
- */
-function bundleComponent(destPath, outputFileName, tempFileName) {
-  var opts = {
-    destPath: destPath,
-    outputFileName: outputFileName
-  };
-  return buildTools.bundle('temp/' + tempFileName, context, opts);
-}
+//
+// Functions mapping directly to gulp tasks
+// ----------------------------------------
+//
 
 /*
- * Bundle bootstrap code for embedding the component
+ * Bundle the main component(s)
  */
-function bundleEmbedBootstrap() {
-  return buildTools.bundle(j(packagePath, 'src', 'js', 'embed.jsx'),
-    context, {rev: false, outputFileName: 'embed.js'});
+function bundleComponents(opts, context, assetContext, callback) {
+
+  var pageDefs = pageDefUtils.getEnrichedPageDefs(opts);
+
+  if (!opts.embedDefs) {
+    var watch = context.dev; // TODO
+    var componentPath = 'index.js';
+    createJsxAndBundle(context.destPath, componentPath,
+      opts.reactRouter, pageDefs, watch, assetContext, opts.babelPaths, callback);
+    return;
+  }
+
+  // multi-embeds are built one at a time
+  //
+  // (while webpack allows for multiple entry points
+  // this seemed to get really complicated when considering
+  // the need to also create index.html:s within a directory
+  // structure)
+  var promises = opts.embedDefs.map(edef => {
+    var destPath = context.destPath + edef.path.substring(1);
+    var watch = false;
+    var pageDef = pageDefUtils.enrichPageDef(edef, opts.baseUrl, assetContext);
+    pageDef.path = '';
+    return createJsxAndBundlePromisified(destPath, edef.componentPath,
+      opts.reactRouter, [pageDef], watch, assetContext + edef.path.substring(1) + '/', opts.babelPaths);
+  });
+
+  return Promise.all(promises).then(function() {
+    callback();
+  }).error(function(err) {
+    gutil.log(`Error(s) during bundling ${err}`);
+  });
+
+}
+
+
+function bundleEmbedBootstrap(context, assetContext, callback) {
+  var entryPoint = require.resolve('./entry-points/embed.jsx');
+  var outputFileName = 'embed.js';
+  var destPath = context.destPath;
+  var pageDefs = null;
+  var watch = false;
+  return bundleWebpack(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, null, callback);
 }
 
 /*
  * Bundle code for resizing embedded iFrame
  */
-function bundleResize() {
-  return buildTools.bundle(j(packagePath, 'src', 'js', 'resize.jsx'),
-    context, {rev: false, outputFileName: 'resize.js'});
+function bundleResize(context, assetContext, callback) {
+  var entryPoint = require.resolve('./entry-points/resize.jsx');
+  var outputFileName = 'resize.js';
+  var destPath = context.destPath;
+  var pageDefs = null;
+  var watch = false;
+  return bundleWebpack(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, null, callback);
 }
-
-
-function embedCodes(context, opts, baseUrl, assetContext, cb) {
-  if (!opts.embedCodes) {
-    return cb();
-  }
-  if (Array.isArray(opts.embedDefs)) {
-    return mergeStream(opts.embedDefs.map(function(def) {
-      return embedCodesPage(context, baseUrl, assetContext, def.path, cb);
-    }));
-  }
-  return embedCodesPage(context, baseUrl, assetContext, '', cb);
-}
-
 
 /*
- * Generate embed codes
+ * Prepare standard skeleton for some data-assets
  */
-function embedCodesPage(context, baseUrl, assetContext, path, cb) {
-
-  // if baseUrl is not defined, this is not
-  // intended to be embeddable, and there is
-  // no need to generate embed codes
-  if (!baseUrl) {
-    cb();
-    return;
-  }
-
-  // for dev builds baseUrl is always localhost
-  var urlPath = path.substring(1);
-  var embedUrl = context.dev ? ('http://localhost:3000/' + urlPath) : baseUrl + assetContext + urlPath;
-  var embedBaseUrl = context.dev ? ('http://localhost:3000/') : baseUrl + assetContext;
-
-  return src(j(packagePath, 'src', 'www', 'embed-codes.hbs'))
-    .pipe(through2.obj(function(file, enc, _cb) {
-      var params = {
-        scriptTagEmbedCode: embedCode.getScriptTagEmbedCode(embedBaseUrl, embedUrl),
-        iFrameWithRemoteResizeEmbedCode: embedCode.getIFrameEmbedCodeWithRemoteResize(embedBaseUrl, embedUrl),
-        iFrameWithInlineResizeEmbedCode: embedCode.getIFrameEmbedCodeWithInlineResize(embedBaseUrl, embedUrl)
-      };
-      file.contents = new Buffer(
-        context.hbs.renderSync(file.contents.toString(), params));
-      this.push(file);
-      _cb();
-    }))
-    .pipe($.rename('embed-codes.html'))
-    .pipe(dest(context.destPath + path));
-}
-
-
-function setWatch(cb) {
-  context.watch = true;
-  cb();
-}
-
-
 function prepareSkeleton(cb) {
   mkpath.sync(j('temp', 'data-assets'));
   mkpath.sync(j('temp', 'generated-images'));
@@ -270,6 +215,9 @@ function prepareSkeleton(cb) {
 }
 
 
+/*
+ * Setup a distribution build
+ */
 function setupDistBuild(cb) {
   context.dev = false;
   context.destPath = j('dist', context.assetPath);
@@ -338,6 +286,11 @@ function writeBuildArtifact(url, fileName, cb) {
 }
 
 
+//
+// Setting up of tasks for CLI
+// ---------------------------
+//
+
 var prepareBuildTasks = function(gulp, opts) {
   if (!opts) {
     opts = {};
@@ -350,24 +303,13 @@ var prepareBuildTasks = function(gulp, opts) {
 
   context.assetPath = !deployOpt.assetContext ? '' : deployOpt.assetContext;
 
-  gulp.task('watch', function(cb) {
-    gulp.watch('./**/*.scss', gulp.series('styles'));
-    cb();
-  });
-
   gulp.task('prepare-skeleton', prepareSkeleton);
-  gulp.task('set-watch', setWatch);
-  gulp.task('images', buildTools.images.bind(null, context, opts.paths));
-  gulp.task('data', buildTools.data.bind(null, context, opts.paths));
-  gulp.task('styles', buildTools.styles.bind(null, context));
-  gulp.task('manifest', buildTools.manifest.bind(null, context));
-  gulp.task('html', html.bind(null, context, opts, deployOpt.baseUrl, deployOpt.assetContext));
-  gulp.task('bundle-components', bundleComponents.bind(null, opts, context));
-  gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap);
-  gulp.task('bundle-resize', bundleResize);
-  gulp.task('embed-codes', embedCodes.bind(null, context, opts, deployOpt.baseUrl, deployOpt.assetContext));
-  gulp.task('serve', buildTools.serve);
-  gulp.task('serve-prod', buildTools.serveProd);
+  gulp.task('copy-temp-jsx', copyTempJsx);
+  gulp.task('bundle-components', bundleComponents.bind(null, opts, context, deployOpt.assetContext));
+  gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap.bind(null, context, deployOpt.assetContext));
+  gulp.task('bundle-resize', bundleResize.bind(null, context, opts.assetContext));
+  gulp.task('embed-codes', embedCodeUtils.embedCodes.bind(null, context, opts, deployOpt.baseUrl, deployOpt.assetContext));
+  //gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
   gulp.task('notify', notify.bind(null, deployOpt.project,
        deployOpt.org,
@@ -389,16 +331,11 @@ var prepareBuildTasks = function(gulp, opts) {
   );
 
   var buildTaskNames = [
-    'images',
-    'data',
-    'styles',
-    //'generate-jsx',
-    'bundle-components',
+    'embed-codes',
+    'copy-temp-jsx',
     'bundle-embed-bootstrap',
     'bundle-resize',
-    'manifest',
-    'embed-codes',
-    'html'];
+    'bundle-components'];
 
   if (opts.pretasks) {
     buildTaskNames = opts.pretasks.concat(buildTaskNames);
@@ -407,9 +344,7 @@ var prepareBuildTasks = function(gulp, opts) {
 
   gulp.task('build', gulp.series(buildTaskNames));
   gulp.task('dist', gulp.series('setup-dist-build', 'build'));
-
-  gulp.task('default', gulp.series(
-    'set-watch', 'build', 'watch', 'serve'));
+  gulp.task('default', gulp.series('build'));
 
   gulp.task('s3-deploy', s3.publish
     .bind(null, opts.publishFromFolder, deployOpt));
@@ -418,6 +353,3 @@ var prepareBuildTasks = function(gulp, opts) {
 
 
 module.exports = prepareBuildTasks;
-
-
-

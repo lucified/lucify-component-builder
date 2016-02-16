@@ -1,5 +1,12 @@
 
-@import '../../node_modules/lucify-commons/src/scss/styles-full.scss';
+:global {
+  @import '~lucify-commons/src/scss/styles-full.scss';
+}
+
+// import mixins, etc
+@import '~lucify-commons/src/scss/variables.scss';
+@import '~lucify-commons/src/scss/mixins.scss';
+
 
 .hello-world {
 
@@ -26,3 +33,4 @@
   }
 
 }
+
