@@ -5,7 +5,6 @@ var fs = require('fs');
 var mkpath = require('mkpath');
 var del = require('del');
 var parseArgs = require('minimist');
-var mergeStream = require('merge-stream');
 var replaceall = require('replaceall');
 var request = require('request');
 var git = require('git-rev-sync');
@@ -178,7 +177,7 @@ function bundleComponents(opts, context, assetContext, callback) {
   return Promise.all(promises).then(function() {
     callback();
   }).error(function(err) {
-    gutil.log('Error(s) during bundling');
+    gutil.log(`Error(s) during bundling ${err}`);
   });
 
 }

@@ -1,25 +1,16 @@
+const gutil         = require('gulp-util'),
+  extend            = require('object-extend'),
+  WebpackDevServer  = require('webpack-dev-server'),
+  HtmlWebpackPlugin = require('html-webpack-plugin'),
+  webpack           = require('webpack'),
+  path              = require('path'),
+  parseArgs         = require('minimist');
 
-var sprintf = require('sprintf');
-var gutil = require('gulp-util');
-var extend = require('object-extend');
-
-var gulpWebpack = require('webpack-stream');
-var WebpackDevServer = require("webpack-dev-server");
-var HtmlWebpackPlugin = require('html-webpack-plugin')
-
-var gulp = require('gulp');
-var src  = gulp.src;
-var dest = gulp.dest;
-
-var webpack = require('webpack'),
-path = require('path');
-
-var parseArgs = require('minimist');
-
-var options = parseArgs(process.argv, {default: {
-  hot: false
-}});
-
+var options = parseArgs(process.argv, {
+  default: {
+    hot: false
+  }
+});
 
 /*
  *  Bundle a component
@@ -40,37 +31,37 @@ var options = parseArgs(process.argv, {default: {
  *                      least needed for backwards compatiblity for some time
  */
 function bundle(
-    entryPoint,
-    outputFileName,
-    destPath,
-    pageDefs,
-    watch,
-    assetContext,
-    babelPaths,
-    callback) {
+  entryPoint,
+  outputFileName,
+  destPath,
+  pageDefs,
+  watch,
+  assetContext,
+  babelPaths,
+  callback) {
 
   var config = {
-     resolve: {
-       modulesDirectories: ['node_modules'],
-     },
-     module: {
-       loaders: getLoaders(babelPaths)
-     },
-     resolveLoader: {
-      root: [path.resolve(__dirname, '../node_modules')],
-     },
-     output: {
+    resolve: {
+      modulesDirectories: ['node_modules']
+    },
+    module: {
+      loaders: getLoaders(babelPaths)
+    },
+    resolveLoader: {
+      root: [path.resolve(__dirname, '../node_modules')]
+    },
+    output: {
       filename: outputFileName,
-      path: process.cwd() + "/" + destPath,
+      path: process.cwd() + '/' + destPath,
       publicPath: '/' + assetContext
-     },
-     entry: entryPoint,
-     plugins: htmlWebpackPluginsFromPageDefs(pageDefs, watch),
-     // enabling watch here seems to fix a weird problem where
-     // the bundle would seemingly randomly be built incorrectly
-     // when using the webpack-dev-server, resulting in TypeError
-     // for embed-decorator in the browser console
-     watch: watch
+    },
+    entry: entryPoint,
+    plugins: htmlWebpackPluginsFromPageDefs(pageDefs, watch),
+    // enabling watch here seems to fix a weird problem where
+    // the bundle would seemingly randomly be built incorrectly
+    // when using the webpack-dev-server, resulting in TypeError
+    // for embed-decorator in the browser console
+    watch: watch
   };
 
   if (watch) {
@@ -79,7 +70,6 @@ function bundle(
   }
   plainBundle(config, callback);
 }
-
 
 //
 // Private functions
@@ -91,36 +81,37 @@ function bundle(
  * based on given page defs
  */
 function htmlWebpackPluginsFromPageDefs(pageDefs, watch) {
-    var arr;
-    if (Array.isArray(pageDefs)) {
-      arr = pageDefs;
-    } else {
-      return [];
+  var arr;
+  if (Array.isArray(pageDefs)) {
+    arr = pageDefs;
+  } else {
+    return [];
+  }
+
+  return arr.map(item => {
+    if (!item.path) {
+      item.path = '';
     }
+    var config = {
+      template: require.resolve('../www/embed.hbs'),
+      inject: false,
+      filename: path.join(item.path, 'index.html'),
 
-    return arr.map(item => {
-        if (!item.path) {
-          item.path = '';
-        }
-        var config = {
-            template: require.resolve('../www/embed.hbs'),
-            inject: false,
-            filename: path.join(item.path, 'index.html'),
-
-            // this enables a script tag for automatic refresh
-            // https://webpack.github.io/docs/webpack-dev-server.html#automatic-refresh
-            devServer: watch
-        };
-        var fullConfig = extend(config, item);
-        return new HtmlWebpackPlugin(fullConfig);
-    });
+      // this enables a script tag for automatic refresh
+      // https://webpack.github.io/docs/webpack-dev-server.html#automatic-refresh
+      devServer: watch
+    };
+    var fullConfig = extend(config, item);
+    return new HtmlWebpackPlugin(fullConfig);
+  });
 }
-
 
 /*
  * Start webpack dev server for given webpack configuration
  */
 function devServerBundle(config, destPath) {
+  const port = 3000;
+  const host = '0.0.0.0';
   config.output.publicPath = '/';
 
   if (options.hot) {
@@ -139,18 +130,31 @@ function devServerBundle(config, destPath) {
     config.plugins.push(new webpack.HotModuleReplacementPlugin());
   }
 
-  var compiler = webpack(config);
-  new WebpackDevServer(compiler, {
-      contentBase: destPath,
-      noInfo: false,
-      hot: options.hot,
+  const compiler = webpack(config);
+  const server = new WebpackDevServer(compiler, {
+    contentBase: destPath,
+    noInfo: false,
+    hot: options.hot,
+    colors: true,
+    quiet: false,
+    stats: {
       colors: true,
-      quiet: false,
-      stats: {colors: true, chunks: false, chunkOrigins: false,
-        chunkModules: false, errorDetails: false, source: false,
-        reasons: false, children: false, modules: false,
-        version: false, hash: false, timings: false, assets: false}
-  }).listen(3000, "localhost", function(err) {
+      chunks: false,
+      chunkOrigins: false,
+      chunkModules: false,
+      errorDetails: false,
+      source: false,
+      reasons: false,
+      children: false,
+      modules: false,
+      version: false,
+      hash: false,
+      timings: false,
+      assets: false
+    }
+  });
+
+  server.listen(port, host, function(err) {
 
     // this is only run once after the
     // server has started
@@ -164,14 +168,15 @@ function devServerBundle(config, destPath) {
     // to the console directly on its own )
     //
 
-      if(err) {
-        throw new gutil.PluginError("webpack-dev-server", err);
-      }
+    if (err) {
+      throw new gutil.PluginError('webpack-dev-server', err);
+    }
+    gutil.log(`[WebpackDevServer] listening on ${host}:${port}`);
+
     // keep the server alive or continue?
     // callback();
   });
 }
-
 
 /*
  * Create distribution for given webpack configuration
@@ -183,18 +188,23 @@ function plainBundle(config, callback) {
       if (err) {
         gutil.log('[webpack]', err);
       } else {
-        gutil.log('[webpack]', stats.toString({chunks: false, colors: true}));
+        gutil.log('[webpack]', stats.toString({
+          chunks: false,
+          colors: true
+        }));
       }
       // for some strange reason process.exit(1) will not
       // work, so using SIGTERM. also
-      process.kill( process.pid, 'SIGTERM' );
+      process.kill(process.pid, 'SIGTERM');
       callback(true);
     }
-    gutil.log('[webpack]', stats.toString({chunks: false, colors: true}));
+    gutil.log('[webpack]', stats.toString({
+      chunks: false,
+      colors: true
+    }));
     callback();
   });
 }
-
 
 /*
  * Get the webpack loaders object for the webpack configuration
@@ -205,46 +215,40 @@ function getLoaders(babelPaths) {
     babelPaths = [];
   }
 
-  return [
-      {
-        test: /\.(js|jsx)$/,
-        loader: require.resolve('babel-loader'),
-        //loaders: ['react-hot', 'babel-loader'],
-        include: [
-          process.cwd() + '/src',
-          process.cwd() + '/temp',
-          __dirname
-        ].concat(babelPaths),
-        query: {
-          presets: [
-            // https://github.com/babel/babel-loader/issues/166
-            require.resolve('babel-preset-es2015'),
-            require.resolve('babel-preset-stage-0'),
-            require.resolve('babel-preset-react')
-          ]
-        }
-      },
-      {
-        test: /\.svg$/,
-        loader: require.resolve('url-loader') + "?limit=10000&mimetype=image/svg+xml"
-      },
-      {
-        test: /\.scss$/,
-        loaders: [
-          require.resolve('style-loader'),
-          require.resolve('css-loader') + "?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]",
-          require.resolve('sass-loader')]
-      },
-      {
-        test: /\.(jpeg|jpg|gif|png|json)$/,
-        loaders: [require.resolve('file-loader') + "?name=[name]-[hash:12].[ext]"]
-      },
-      {
-        test: /\.hbs$/,
-        loader: require.resolve('handlebars-loader')
-      }
-  ];
+  return [{
+    test: /\.(js|jsx)$/,
+    loader: require.resolve('babel-loader'),
+    //loaders: ['react-hot', 'babel-loader'],
+    include: [
+      process.cwd() + '/src',
+      process.cwd() + '/temp',
+      __dirname
+    ].concat(babelPaths),
+    query: {
+      presets: [
+        // https://github.com/babel/babel-loader/issues/166
+        require.resolve('babel-preset-es2015'),
+        require.resolve('babel-preset-stage-0'),
+        require.resolve('babel-preset-react')
+      ]
+    }
+  }, {
+    test: /\.svg$/,
+    loader: require.resolve('url-loader') + '?limit=10000&mimetype=image/svg+xml'
+  }, {
+    test: /\.scss$/,
+    loaders: [
+      require.resolve('style-loader'),
+      require.resolve('css-loader') + '?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
+      require.resolve('sass-loader')
+    ]
+  }, {
+    test: /\.(jpeg|jpg|gif|png|json)$/,
+    loaders: [require.resolve('file-loader') + '?name=[name]-[hash:12].[ext]']
+  }, {
+    test: /\.hbs$/,
+    loader: require.resolve('handlebars-loader')
+  }];
 }
-
 
 module.exports = bundle;
