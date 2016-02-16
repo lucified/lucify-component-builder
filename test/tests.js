@@ -10,8 +10,6 @@ var ENVS = require('../src/js/envs.js')
 
 chai.use(require('chai-fs'));
 
-var fileExists = require('file-exists');
-
 const deployOpt = require('../src/js/deploy-options.js')
 
 
