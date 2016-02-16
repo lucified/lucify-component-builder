@@ -66,19 +66,6 @@ String.prototype.endsWith = function(suffix) {
 };
 
 
-function bundleComponents(opts, context) {
-  if (!opts.embedDefs) {
-    return createJsxAndBundle(opts, context, {
-      reactRouter: opts.reactRouter,
-      componentPath: 'index.js',
-      path: ''});
-  }
-  return mergeStream(opts.embedDefs.map(function(edef) {
-    return createJsxAndBundle(opts, context, edef);
-  }));
-}
-
-
 
 function getTempFileName(componentPath) {
   var ret = componentPath === '' ? 'component.jsx' : 'component' + replaceall('/', '-', componentPath) + '.jsx';
