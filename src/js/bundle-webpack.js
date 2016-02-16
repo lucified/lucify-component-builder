@@ -178,12 +178,20 @@ function devServerBundle(config, destPath) {
  */
 function plainBundle(config, callback) {
   webpack(config, function(err, stats) {
-      if (err) {
-        gutil.log("[webpack]", err);
-        process.exit(1);
+    if (err || stats.hasErrors()) {
+      gutil.log('[webpack] ERROR');
+      if (err) {
+        gutil.log('[webpack]', err);
+      } else {
+        gutil.log('[webpack]', stats.toString({chunks: false, colors: true}));
       }
-      gutil.log("[webpack]", stats.toString({chunks: false}));
-      callback();
+      // for some strange reason process.exit(1) will not
+      // work, so using SIGTERM. also
+      process.kill( process.pid, 'SIGTERM' );
+      callback(true);
+    }
+    gutil.log('[webpack]', stats.toString({chunks: false, colors: true}));
+    callback();
   });
 }
 
