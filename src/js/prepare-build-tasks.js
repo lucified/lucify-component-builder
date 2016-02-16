@@ -72,6 +72,23 @@ function getTempFileName(componentPath) {
   return ret;
 }
 
+/*
+ * Copy bootstrap JSX files to the project's temp directory
+ *
+ * We cannot only set up the entry point and make it reference
+ * resources via require('lucify-component-builder/...'), because
+ * resolving those requires will not work for the test-projects,
+ * which have a symlinked lucify-component-builder in their node_modules.
+ *
+ * The reason why that does not work is that require() uses the realPath
+ *
+ *
+ */
+function copyTempJsx() {
+  return gulp.src(__dirname + '/react-bootstrap/*.jsx')
+    .pipe(gulp.dest('temp'));
+}
+
 
 /*
  * Create JSX and run webpack to create the associated bundle
@@ -88,20 +105,15 @@ function createJsxAndBundle(destPath, componentPath, reactRouter, pageDefs, watc
   generateJSX(reactRouter, componentPath, tempFileName);
   var entryPoint = './temp/' + tempFileName;
 
-  gulp.src('./react-boostrap/*')
-    .pipe(gulp.dest('temp'))
-    .on('end', function() {
-      bundleWebpack(
-        entryPoint,
-        null,
-        destPath,
-        pageDefs,
-        watch,
-        assetContext,
-        babelPaths,
-        callback);
-    }
-  );
+  bundleWebpack(
+    entryPoint,
+    null,
+    destPath,
+    pageDefs,
+    watch,
+    assetContext,
+    babelPaths,
+    callback);
 }
 
 var createJsxAndBundlePromisified = Promise.promisify(createJsxAndBundle);
@@ -166,7 +178,7 @@ function bundleComponents(opts, context, assetContext, callback) {
   return Promise.all(promises).then(function() {
     callback();
   }).error(function(err) {
-    gutil.log('error with with bundling' + err);
+    gutil.log('Error(s) during bundling');
   });
 
 }
@@ -293,6 +305,7 @@ var prepareBuildTasks = function(gulp, opts) {
   context.assetPath = !deployOpt.assetContext ? '' : deployOpt.assetContext;
 
   gulp.task('prepare-skeleton', prepareSkeleton);
+  gulp.task('copy-temp-jsx', copyTempJsx);
   gulp.task('bundle-components', bundleComponents.bind(null, opts, context, deployOpt.assetContext));
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap.bind(null, context, deployOpt.assetContext));
   gulp.task('bundle-resize', bundleResize.bind(null, context, opts.assetContext));
@@ -320,6 +333,7 @@ var prepareBuildTasks = function(gulp, opts) {
 
   var buildTaskNames = [
     'embed-codes',
+    'copy-temp-jsx',
     'bundle-embed-bootstrap',
     'bundle-resize',
     'bundle-components'];
