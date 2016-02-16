@@ -17,7 +17,12 @@
     "lucify-deploy": "./src/lucify-deploy.bash"
   },
   "license": "MIT",
-  "//": "lucify-component-builder",
+  "//0": "Note that webpack, etc are needed in dependencies, not devDependencies",
+  "//1": "When developing another project depending on lucify-component-builder, ",
+  "//2": "npm install for the project will install only the regular dependencies for ",
+  "//3": "lucify-component-builder. In lucify-component-builder, devDepedencies",
+  "//4": "should include only dependencies needed only for testing ",
+  "//5": "lucify-component-builder",
   "dependencies": {
     "babel-core": "^6.4.0",
     "babel-loader": "^6.2.1",
@@ -49,14 +54,12 @@
     "replaceall": "^0.1.6",
     "request": "^2.69.0",
     "sass-loader": "^3.1.2",
-    "sprintf": "^0.1.5",
     "style-loader": "^0.13.0",
     "through2": "^2.0.0",
     "url-loader": "^0.5.6",
     "vinyl-fs": "^2.3.1",
     "webpack": "^1.12.2",
-    "webpack-dev-server": "^1.12.0",
-    "webpack-stream": "^3.1.0"
+    "webpack-dev-server": "^1.12.0"
   },
   "devDependencies": {
     "chai": "^1.10.0",
