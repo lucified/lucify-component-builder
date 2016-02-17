@@ -243,7 +243,7 @@ function getLoaders(babelPaths) {
       require.resolve('sass-loader')
     ]
   }, {
-    test: /\.(jpeg|jpg|gif|png|json)$/,
+    test: /\.(jpeg|jpg|gif|png)$/,
     loaders: [require.resolve('file-loader') + '?name=[name]-[hash:12].[ext]']
   }, {
     test: /\.hbs$/,
