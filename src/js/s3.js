@@ -37,7 +37,7 @@ function publishToS3(bucket, simulate, force) {
   // and to maybe continue it, i.e. to access its last segment. So we're returning
   // an array with the first and last segments of this pipeline.
 
-  var first = publisher.publish({}, {
+  var first = publisher.publish({'x-amz-acl': 'private'}, {
     force: force,
     simulate: simulate === true ? true : false
   });
@@ -49,6 +49,8 @@ function publishToS3(bucket, simulate, force) {
   if(simulate === true) {
     reporter = through2((file, enc, cb) => {
       gutil.log(`s3://${bucket}/${file.s3.path}`);
+      gutil.log(file.s3.headers);
+
       cb(null, file);
     });
   }
