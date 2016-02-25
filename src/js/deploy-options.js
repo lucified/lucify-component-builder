@@ -29,8 +29,8 @@ deployOptions[ENVS.DEVELOPMENT] = {
   forceDeployment: false
 };
 deployOptions[ENVS.TEST] = {
-  bucket: 'lucify-development',
-  baseUrl: 'http://lucify-development.s3-website-eu-west-1.amazonaws.com/',
+  bucket: 'lucify-protected',
+  baseUrl: 'https://protected.lucify.com/',
   maxAge: 0,
   simulateDeployment: false,
   forceDeployment: false
