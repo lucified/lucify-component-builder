@@ -113,6 +113,7 @@ function devServerBundle(config, destPath) {
   const port = 3000;
   const host = '0.0.0.0';
   config.output.publicPath = '/';
+  config.devtool = 'source-map';
 
   if (options.hot) {
     // Experimental setup for hot module replacement
