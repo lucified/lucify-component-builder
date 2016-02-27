@@ -5,6 +5,7 @@ var vfs = require('vinyl-fs');
 var path = require('path');
 var through2 = require('through2').obj;
 var gutil = require('gulp-util');
+var sodium = require('libsodium-wrappers');
 
 
 var entryPoints = [
@@ -59,6 +60,21 @@ function publishToS3(bucket, simulate, force) {
 
 }
 
+function decrypt(cipherText, nonce, key) {
+  key = key || process.env['LUCIFY_ENC_KEY'];
+  nonce = nonce || process.env['LUCIFY_ENC_NONCE'];
+
+  if(!key || !nonce || !cipherText)
+    throw new Error('Invalid decrypt arguments');
+
+  return sodium.crypto_secretbox_open_easy(
+    sodium.from_base64(cipherText),
+    sodium.from_base64(nonce),
+    sodium.from_base64(key),
+    'text'
+  );
+}
+
 /*
  * Create the AWS publisher
  */
@@ -73,8 +89,24 @@ function createPublisher(bucket) {
   var config = {
     params: {
       'Bucket': bucket
-    }
+    },
+    region: process.env['AWS_REGION'] || process.env['AWS_DEFAULT_REGION'] || 'eu-west-1',
+    logger: console
   };
+
+  if(process.env['AWS_CREDENTIALS']) {
+    var credentials = JSON.parse(decrypt(process.env['AWS_CREDENTIALS']));
+    config.accessKeyId = credentials.accessKeyId || credentials.access_key_id;
+    config.secretAccessKey = credentials.secretAccessKey || credentials.secret_access_key;
+    config.sessionToken = credentials.sessionToken || credentials.session_token;
+
+    if(!config.accessKeyId || !config.secretAccessKey || !config.sessionToken) {
+      throw new Error('Invalid AWS_CREDENTIALS');
+    }
+    console.log('Using AWS_CREDENTIALS');
+    //console.log(config)
+  }
+
   var publisher = awspublish.create(config);
   return publisher;
 }
@@ -198,6 +230,7 @@ module.exports = {
   assetStream,
   publishToS3,
   publishInSeries,
-  publish
+  publish,
+  decrypt
 };
 

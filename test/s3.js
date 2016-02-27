@@ -11,6 +11,9 @@ var AWS = require('../node_modules/gulp-awspublish/node_modules/aws-sdk')
 var _ = require('lodash')
 AWS.config.update({region: process.env.AWS_REGION || 'eu-west-1'});
 
+var sodium = require('libsodium-wrappers');
+
+
 
 var inspect = (obj) => console.log(require("util").inspect(obj,{ depth: null }))
 
@@ -87,6 +90,67 @@ describe("publish-stream", () => {
   })
 
 })
+
+
+describe("decryption", () => {
+
+  it("can decrypt", () => {
+
+    const key = sodium.to_base64(sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES));
+    const nonce = sodium.to_base64(sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES));
+    const message = "Hello world!";
+    const cipherText = sodium.crypto_secretbox_easy(
+      message,
+      sodium.from_base64(nonce),
+      sodium.from_base64(key),
+      'base64'
+    );
+
+    console.log({
+      key,
+      nonce,
+      cipherText
+    });
+    const clearText = s3.decrypt(cipherText, nonce, key);
+    expect(clearText).to.equal(message);
+
+  });
+
+  it("fails when key or nonce has been tampered with", () => {
+
+    const key = sodium.to_base64(sodium.randombytes_buf(sodium.crypto_secretbox_KEYBYTES));
+    const nonce = sodium.to_base64(sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES));
+    const message = "Hello world!";
+    const cipherText = sodium.crypto_secretbox_easy(
+      message,
+      sodium.from_base64(nonce),
+      sodium.from_base64(key),
+      'base64'
+    );
+
+    var l = key.length;
+    var first = key.substring(0, 1);
+    const tamperedKey = String.fromCodePoint(first.codePointAt(0) + 1) + key.substring(1, l);
+    console.log({key, tamperedKey})
+
+    expect(tamperedKey).to.not.equal(key);
+    expect(sodium.from_base64(tamperedKey)).to.not.equal(sodium.from_base64(key));
+    expect(s3.decrypt.bind(null, cipherText, nonce, tamperedKey)).to.throw(Error);
+
+    l = nonce.length;
+    first = nonce.substring(0, 1);
+    const tamperedNonce = String.fromCodePoint(first.codePointAt(0) + 1) + nonce.substring(1, l);
+    console.log({nonce, tamperedNonce})
+
+    expect(tamperedNonce).to.not.equal(nonce);
+    expect(sodium.from_base64(tamperedNonce)).to.not.equal(sodium.from_base64(nonce));
+    expect(s3.decrypt.bind(null, cipherText, tamperedNonce, key)).to.throw(Error);
+
+
+
+  });
+
+});
 
 
 describe("cache", () => {
