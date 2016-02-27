@@ -45,6 +45,7 @@
     "handlebars-loader": "^1.1.4",
     "html-webpack-plugin": "^2.8.2",
     "json-loader": "^0.5.4",
+    "libsodium-wrappers": "^0.2.12",
     "lodash": "^4.4.0",
     "lucify-commons": "~0.2.3",
     "merge-stream": "^1.0.0",
@@ -67,7 +68,6 @@
     "chai-fs": "^0.1.0",
     "event-stream": "^3.3.2",
     "gulp-debug": "^2.1.2",
-    "libsodium-wrappers": "^0.2.12",
     "mocha": "^2.4.5",
     "query-string": "^3.0.0"
   }
