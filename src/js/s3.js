@@ -65,7 +65,7 @@ function decrypt(cipherText, nonce, key) {
   nonce = nonce || process.env['LUCIFY_ENC_NONCE'];
 
   if(!key || !nonce || !cipherText)
-    return null;
+    throw new Error('Invalid decrypt arguments');
 
   return sodium.crypto_secretbox_open_easy(
     sodium.from_base64(cipherText),
@@ -89,18 +89,22 @@ function createPublisher(bucket) {
   var config = {
     params: {
       'Bucket': bucket
-    }
+    },
+    region: process.env['AWS_REGION'] || process.env['AWS_DEFAULT_REGION'] || 'eu-west-1',
+    logger: console
   };
 
   if(process.env['AWS_CREDENTIALS']) {
-    try {
-      var credentials = JSON.parse(decrypt(process.env['AWS_CREDENTIALS']));
-      config.accessKeyId = credentials.accessKeyId;
-      config.secretAccessKey = credentials.secretAccessKey;
-      config.sessionToken = credentials.sessionToken;
-    } catch(e) {
-      console.log(e);
+    var credentials = JSON.parse(decrypt(process.env['AWS_CREDENTIALS']));
+    config.accessKeyId = credentials.accessKeyId || credentials.access_key_id;
+    config.secretAccessKey = credentials.secretAccessKey || credentials.secret_access_key;
+    config.sessionToken = credentials.sessionToken || credentials.session_token;
+
+    if(!config.accessKeyId || !config.secretAccessKey || !config.sessionToken) {
+      throw new Error('Invalid AWS_CREDENTIALS');
     }
+    console.log('Using AWS_CREDENTIALS');
+    //console.log(config)
   }
 
   var publisher = awspublish.create(config);
