@@ -67,6 +67,7 @@
     "chai-fs": "^0.1.0",
     "event-stream": "^3.3.2",
     "gulp-debug": "^2.1.2",
+    "libsodium-wrappers": "^0.2.12",
     "mocha": "^2.4.5",
     "query-string": "^3.0.0"
   }

@@ -5,6 +5,7 @@ var vfs = require('vinyl-fs');
 var path = require('path');
 var through2 = require('through2').obj;
 var gutil = require('gulp-util');
+var sodium = require('libsodium-wrappers');
 
 
 var entryPoints = [
@@ -59,6 +60,21 @@ function publishToS3(bucket, simulate, force) {
 
 }
 
+function decrypt(cipherText, nonce, key) {
+  key = key || process.env['LUCIFY_ENC_KEY'];
+  nonce = nonce || process.env['LUCIFY_ENC_NONCE'];
+
+  if(!key || !nonce || !cipherText)
+    return null;
+
+  return sodium.crypto_secretbox_open_easy(
+    sodium.from_base64(cipherText),
+    sodium.from_base64(nonce),
+    sodium.from_base64(key),
+    'text'
+  );
+}
+
 /*
  * Create the AWS publisher
  */
@@ -75,6 +91,18 @@ function createPublisher(bucket) {
       'Bucket': bucket
     }
   };
+
+  if(process.env['AWS_CREDENTIALS']) {
+    try {
+      var credentials = JSON.parse(decrypt(process.env['AWS_CREDENTIALS']));
+      config.accessKeyId = credentials.accessKeyId;
+      config.secretAccessKey = credentials.secretAccessKey;
+      config.sessionToken = credentials.sessionToken;
+    } catch(e) {
+      console.log(e);
+    }
+  }
+
   var publisher = awspublish.create(config);
   return publisher;
 }
@@ -198,6 +226,7 @@ module.exports = {
   assetStream,
   publishToS3,
   publishInSeries,
-  publish
+  publish,
+  decrypt
 };
 
