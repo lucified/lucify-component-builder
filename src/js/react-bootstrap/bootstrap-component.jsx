@@ -10,4 +10,4 @@ module.exports = function(Component) {
   var Comp = EmbedWithUrlParamsDecorator(Component);
   window.React = React;
   React.render(<Comp />, document.getElementById('content'));
-}
+};

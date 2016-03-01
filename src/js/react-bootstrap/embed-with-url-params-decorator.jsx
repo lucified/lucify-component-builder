@@ -9,14 +9,14 @@ var decode = function(query) {
   var ret = {};
 
   for (var key in query) {
-    var val = query[key];  
+    var val = query[key];
 
     if (val == 'false') {
       val = false;
-    
+
     } else if (val == 'true') {
       val = true;
-    
+
     } else if (isFinite(val)) {
       val = Number(val);
 
@@ -26,7 +26,7 @@ var decode = function(query) {
   }
 
   return ret;
-}
+};
 
 
 module.exports = function(Component) {

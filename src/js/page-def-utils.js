@@ -15,7 +15,7 @@ function enrichPageDef(pageDef, baseUrl, assetContext) {
   if (pageDef != null) {
     def = deepcopy(pageDef);
   } else {
-    def = {title: "Lucify component"};
+    def = {title: 'Lucify component'};
   }
 
   // default subpath by default
@@ -23,7 +23,7 @@ function enrichPageDef(pageDef, baseUrl, assetContext) {
   def.url = baseUrl + assetContext + def.path.replace('/', '');
 
   if (!def.url.endsWith('/')) {
-    def.url = def.url + "/";
+    def.url = def.url + '/';
   }
 
   // by default, google analytics, riveted, etc are enabled
@@ -43,10 +43,10 @@ function enrichPageDef(pageDef, baseUrl, assetContext) {
  */
 function getPageDefsAsArray(opts) {
   if (Array.isArray(opts.pageDefs)) {
-      return opts.pageDefs;
+    return opts.pageDefs;
   }
   if (opts.pageDef != null) {
-      return [opts.pageDef];
+    return [opts.pageDef];
   }
   return [null];
 }
@@ -57,7 +57,7 @@ function getPageDefsAsArray(opts) {
 function getEnrichedPageDefs(opts) {
   return getPageDefsAsArray(opts).map(item => {
     return enrichPageDef(item, opts.baseUrl, opts.assetContext);
-  })
+  });
 }
 
 

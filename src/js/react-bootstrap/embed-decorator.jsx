@@ -8,8 +8,8 @@ var EmbedDecorator = function(Component) {
     getChildContext: function(){
       return {
         embed: true,
-        containerClass: "container-embed",
-      }
+        containerClass: 'container-embed'
+      };
     },
 
     childContextTypes: {
@@ -22,10 +22,9 @@ var EmbedDecorator = function(Component) {
         <div className="embed-decorator">
           <Component {...this.props} />
         </div>
-      )
+      );
     }
   });
 };
-
 
 module.exports = EmbedDecorator;

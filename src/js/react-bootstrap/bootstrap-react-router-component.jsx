@@ -20,4 +20,4 @@ module.exports = function(AppRoutes) {
       React.render(<Handler/>, document.getElementById('content'));
     });
 
-}
+};

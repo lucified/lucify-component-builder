@@ -3,7 +3,7 @@
 // TODO
 //
 // Clean up this ugly implementation
-// 
+//
 
 function guid() {
   function s4() {
@@ -22,10 +22,10 @@ var lucifyEmbed = function(id, url) {
 
   // prepare iframe
   var iframe = document.createElement('iframe');
-  iframe.width="100%";
-  iframe.scrolling="no";
+  iframe.width='100%';
+  iframe.scrolling='no';
   iframe.frameBorder=0;
-  iframe.id = "lucify-" + guid();
+  iframe.id = 'lucify-' + guid();
 
   iframe.src = url;
 
@@ -34,7 +34,7 @@ var lucifyEmbed = function(id, url) {
   parent.insertBefore(iframe, thisScript.nextSibling);
 
   iFrameResize({log:false}, '#' + iframe.id);
-}
+};
 
 
 window.lucifyEmbed = lucifyEmbed;
