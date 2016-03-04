@@ -1,10 +1,11 @@
-const gutil         = require('gulp-util'),
+const gutil       = require('gulp-util'),
   extend            = require('object-extend'),
   WebpackDevServer  = require('webpack-dev-server'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
   webpack           = require('webpack'),
   path              = require('path'),
-  parseArgs         = require('minimist');
+  parseArgs         = require('minimist'),
+  envs              = require('./envs.js');
 
 var options = parseArgs(process.argv, {
   default: {
@@ -63,6 +64,15 @@ function bundle(
     // for embed-decorator in the browser console
     watch: watch
   };
+
+  if(process.env.NODE_ENV === envs.STAGING || process.env.NODE_ENV === envs.PRODUCTION) {
+    config.plugins = config.plugins.concat([
+      new webpack.optimize.UglifyJsPlugin(),
+      new webpack.optimize.DedupePlugin(),
+      new webpack.optimize.OccurenceOrderPlugin()
+    ]);
+    //console.log(config.plugins);
+  }
 
   if (watch) {
     devServerBundle(config, destPath);
