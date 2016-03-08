@@ -4,7 +4,10 @@ const gutil         = require('gulp-util'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
   webpack           = require('webpack'),
   path              = require('path'),
-  parseArgs         = require('minimist');
+  parseArgs         = require('minimist'),
+  envs              = require('./envs.js'),
+  autoprefixer      = require('autoprefixer'),
+  postcssReporter   = require('postcss-reporter');
 
 var options = parseArgs(process.argv, {
   default: {
@@ -55,6 +58,12 @@ function bundle(
       path: process.cwd() + '/' + destPath,
       publicPath: '/' + assetContext
     },
+    postcss: function () {
+      return [
+        autoprefixer,
+        postcssReporter
+      ];
+    },
     entry: entryPoint,
     plugins: htmlWebpackPluginsFromPageDefs(pageDefs, watch),
     // enabling watch here seems to fix a weird problem where
@@ -63,6 +72,15 @@ function bundle(
     // for embed-decorator in the browser console
     watch: watch
   };
+
+  if(process.env.NODE_ENV === envs.STAGING || process.env.NODE_ENV === envs.PRODUCTION) {
+    config.plugins = config.plugins.concat([
+      new webpack.optimize.UglifyJsPlugin(),
+      new webpack.optimize.DedupePlugin(),
+      new webpack.optimize.OccurenceOrderPlugin()
+    ]);
+    //console.log(config.plugins);
+  }
 
   if (watch) {
     devServerBundle(config, destPath);
@@ -240,7 +258,8 @@ function getLoaders(babelPaths) {
     test: /\.scss$/,
     loaders: [
       require.resolve('style-loader'),
-      require.resolve('css-loader') + '?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
+      require.resolve('css-loader') + '?modules&importLoaders=2&localIdentName=[name]__[local]___[hash:base64:5]',
+      require.resolve('postcss-loader'),
       require.resolve('sass-loader')
     ]
   }, {
