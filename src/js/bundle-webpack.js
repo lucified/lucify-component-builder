@@ -1,11 +1,13 @@
-const gutil       = require('gulp-util'),
+const gutil         = require('gulp-util'),
   extend            = require('object-extend'),
   WebpackDevServer  = require('webpack-dev-server'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
   webpack           = require('webpack'),
   path              = require('path'),
   parseArgs         = require('minimist'),
-  envs              = require('./envs.js');
+  envs              = require('./envs.js'),
+  autoprefixer      = require('autoprefixer'),
+  postcssReporter   = require('postcss-reporter');
 
 var options = parseArgs(process.argv, {
   default: {
@@ -55,6 +57,12 @@ function bundle(
       filename: outputFileName,
       path: process.cwd() + '/' + destPath,
       publicPath: '/' + assetContext
+    },
+    postcss: function () {
+      return [
+        autoprefixer,
+        postcssReporter
+      ];
     },
     entry: entryPoint,
     plugins: htmlWebpackPluginsFromPageDefs(pageDefs, watch),
@@ -250,7 +258,8 @@ function getLoaders(babelPaths) {
     test: /\.scss$/,
     loaders: [
       require.resolve('style-loader'),
-      require.resolve('css-loader') + '?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
+      require.resolve('css-loader') + '?modules&importLoaders=2&localIdentName=[name]__[local]___[hash:base64:5]',
+      require.resolve('postcss-loader'),
       require.resolve('sass-loader')
     ]
   }, {
