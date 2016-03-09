@@ -46,6 +46,8 @@
     "handlebars-loader": "^1.1.4",
     "html-webpack-plugin": "^2.8.2",
     "json-loader": "^0.5.4",
+    "less": "^2.6.1",
+    "less-loader": "^2.2.2",
     "libsodium-wrappers": "^0.2.12",
     "lodash": "^4.4.0",
     "lucify-commons": "~0.2.3",

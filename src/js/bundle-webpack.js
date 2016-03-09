@@ -263,6 +263,15 @@ function getLoaders(babelPaths) {
       require.resolve('sass-loader')
     ]
   }, {
+    test: /\.less$/,
+    loaders: [
+      require.resolve('style-loader'),
+      require.resolve('css-loader') + '?modules&importLoaders=2&localIdentName=[name]__[local]___[hash:base64:5]',
+      require.resolve('postcss-loader'),
+      require.resolve('less-loader')
+    ]
+  },
+  {
     test: /\.(jpeg|jpg|gif|png)$/,
     loaders: [require.resolve('file-loader') + '?name=[name]-[hash:12].[ext]']
   }, {
