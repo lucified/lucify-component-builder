@@ -226,7 +226,7 @@ function setupDistBuild(cb) {
 }
 
 
-function notify(project, org, branch, env, url, cb) {
+function notify(project, _org, branch, env, url, cb) {
 
   // we still support also the legacy flowdock PUSH api
   // notification, which will be delivered if a FLOW_TOKEN
@@ -312,22 +312,22 @@ var prepareBuildTasks = function(gulp, opts) {
   //gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
   gulp.task('notify', notify.bind(null, deployOpt.project,
-       deployOpt.org,
-       deployOpt.branch,
-       deployOpt.env,
-       deployOpt.url
-       )
+      deployOpt.org,
+      deployOpt.branch,
+      deployOpt.env,
+      deployOpt.url
+    )
   );
 
   gulp.task('build-artifact', writeBuildArtifact.bind(null, deployOpt.url, opts.artifactFile || defaultArtifactFile));
 
   gulp.task('github-deploy', githubDeploy.bind(null,
-       deployOpt.project,
-       deployOpt.org,
-       deployOpt.branch,
-       deployOpt.env,
-       deployOpt.flow
-     )
+      deployOpt.project,
+      deployOpt.org,
+      deployOpt.branch,
+      deployOpt.env,
+      deployOpt.flow
+    )
   );
 
   var buildTaskNames = [

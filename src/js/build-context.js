@@ -45,7 +45,7 @@ BuildContext.prototype.initHandleBars = function() {
 
 BuildContext.prototype.collectManifest = function() {
   var firstFile = null;
-  return through2.obj(function(file, enc, cb) {
+  return through2.obj(function(file, _enc, cb) {
     // ignore all non-rev'd files
     if (!file.path) {
       cb();
