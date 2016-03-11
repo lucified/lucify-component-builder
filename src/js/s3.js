@@ -48,7 +48,7 @@ function publishToS3(bucket, simulate, force) {
   }
   var reporter = awspublish.reporter();
   if(simulate === true) {
-    reporter = through2((file, enc, cb) => {
+    reporter = through2((file, _enc, cb) => {
       gutil.log(`s3://${bucket}/${file.s3.path}`);
       gutil.log(file.s3.headers);
 
@@ -103,8 +103,7 @@ function createPublisher(bucket) {
     if(!config.accessKeyId || !config.secretAccessKey || !config.sessionToken) {
       throw new Error('Invalid AWS_CREDENTIALS');
     }
-    console.log('Using AWS_CREDENTIALS');
-    //console.log(config)
+    console.log('Using AWS_CREDENTIALS'); // eslint-disable-line
   }
 
   var publisher = awspublish.create(config);
@@ -137,7 +136,7 @@ function entryPointStream(sourceFolder, s3Folder) {
   return vfs.src(entryPoints, {
     cwd: sourceFolder
   })
-  .pipe(through2((file, enc, cb) => {
+  .pipe(through2((file, _enc, cb) => {
     s3Init(file, s3Folder);
     cb(null, file);
   }));
@@ -173,7 +172,7 @@ function assetStream(sourceFolder, maxAge, s3Folder) {
   return vfs.src(src, {
     cwd: sourceFolder
   })
-    .pipe(through2((file, enc, cb) => {
+    .pipe(through2((file, _enc, cb) => {
       s3Init(file, s3Folder);
       Object.assign(file.s3.headers, headers);
       cb(null, file);

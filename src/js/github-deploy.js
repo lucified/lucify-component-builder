@@ -10,12 +10,12 @@ function githubDeploy(project, org, branch, env, flow, cb) {
 
   if (process.env.FROM_HEAVEN && process.env.FROM_HEAVEN !== 'false') {
     gutil.log('Triggered by Heaven, not notifying deployment API');
-    return cb(null, "interrupted");
+    return cb(null, 'interrupted');
   }
 
   if (!process.env.GITHUB_TOKEN) {
     gutil.log('No github token defined, not notifying deployment API');
-    return cb(null, "interrupted");
+    return cb(null, 'interrupted');
   }
 
   const task = 'deploy';

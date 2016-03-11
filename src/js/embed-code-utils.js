@@ -26,7 +26,7 @@ function embedCodes(context, opts, baseUrl, assetContext, cb) {
 /*
  * Generate embed codes
  */
-function embedCodesPage(context, baseUrl, assetContext, path, cb) {
+function embedCodesPage(context, baseUrl, assetContext, path, _cb) {
 
   // for dev builds baseUrl is always localhost
   var urlPath = path.substring(1) + '/';
@@ -36,7 +36,7 @@ function embedCodesPage(context, baseUrl, assetContext, path, cb) {
   var templatePath = require.resolve('../../src/www/embed-codes.hbs');
 
   return src(templatePath)
-    .pipe(through2.obj(function(file, enc, _cb) {
+    .pipe(through2.obj(function(file, _enc, _cb) {
       var params = {
         scriptTagEmbedCode: embedCode.getScriptTagEmbedCode(embedBaseUrl, embedUrl),
         iFrameWithRemoteResizeEmbedCode: embedCode.getIFrameEmbedCodeWithRemoteResize(embedBaseUrl, embedUrl),
