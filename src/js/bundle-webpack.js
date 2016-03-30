@@ -108,13 +108,20 @@ function htmlWebpackPluginsFromPageDefs(pageDefs, watch) {
   }
 
   return arr.map(item => {
-    if (!item.path) {
-      item.path = '';
+    var itemPath = item.path;
+
+    if (!itemPath) {
+      itemPath = '';
     }
+
+    if (itemPath.charAt(0) == '/') {
+      itemPath = itemPath.substr(1);
+    }
+
     var config = {
       template: require.resolve('../www/embed.hbs'),
       inject: false,
-      filename: path.join(item.path, 'index.html'),
+      filename: path.join(itemPath, 'index.html'),
 
       // this enables a script tag for automatic refresh
       // https://webpack.github.io/docs/webpack-dev-server.html#automatic-refresh
