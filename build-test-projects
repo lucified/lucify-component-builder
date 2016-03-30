@@ -14,7 +14,7 @@ for i in $( ls ); do
     rm -rf temp/*.jsx
     npm test
     if [ $? != 0 ]; then
-      echo "'npm run-script dist' failed for ${i}"
+      echo "'npm test' failed for ${i}"
       exit 1
     fi
     cd ..
