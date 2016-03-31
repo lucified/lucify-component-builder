@@ -8,6 +8,7 @@ const gutil         = require('gulp-util'),
   envs              = require('./envs.js'),
   autoprefixer      = require('autoprefixer'),
   postcssReporter   = require('postcss-reporter');
+  getport           = require('getport');
 
 var options = parseArgs(process.argv, {
   default: {
@@ -107,13 +108,20 @@ function htmlWebpackPluginsFromPageDefs(pageDefs, watch) {
   }
 
   return arr.map(item => {
-    if (!item.path) {
-      item.path = '';
+    var itemPath = item.path;
+
+    if (!itemPath) {
+      itemPath = '';
     }
+
+    if (itemPath.charAt(0) == '/') {
+      itemPath = itemPath.substr(1);
+    }
+
     var config = {
       template: require.resolve('../www/embed.hbs'),
       inject: false,
-      filename: path.join(item.path, 'index.html'),
+      filename: path.join(itemPath, 'index.html'),
 
       // this enables a script tag for automatic refresh
       // https://webpack.github.io/docs/webpack-dev-server.html#automatic-refresh
@@ -128,7 +136,6 @@ function htmlWebpackPluginsFromPageDefs(pageDefs, watch) {
  * Start webpack dev server for given webpack configuration
  */
 function devServerBundle(config, destPath) {
-  const port = 3000;
   const host = '0.0.0.0';
   config.output.publicPath = '/';
   config.devtool = 'source-map';
@@ -173,27 +180,31 @@ function devServerBundle(config, destPath) {
     }
   });
 
-  server.listen(port, host, function(err) {
-
-    // this is only run once after the
-    // server has started
-    //
-    // it is unclear when err == true, at least
-    // jsx syntax errors will not cause it
-    // probably it may be caused by some configuration
-    // problems
-    //
-    // ( webpack-dev-server is writing jsx syntax errors etc
-    // to the console directly on its own )
-    //
+  getport(3000, 3999, function(err, port) {
 
     if (err) {
       throw new gutil.PluginError('webpack-dev-server', err);
     }
-    gutil.log(`[WebpackDevServer] listening on ${host}:${port}`);
 
-    // keep the server alive or continue?
-    // callback();
+    server.listen(port, host, function(err) {
+      // this is only run once after the
+      // server has started
+      //
+      // it is unclear when err == true, at least
+      // jsx syntax errors will not cause it
+      // probably it may be caused by some configuration
+      // problems
+      //
+      // ( webpack-dev-server is writing jsx syntax errors etc
+      // to the console directly on its own )
+      //
+      if (err) {
+        throw new gutil.PluginError('webpack-dev-server', err);
+      }
+      gutil.log(`[WebpackDevServer] listening on ${host}:${port}`);
+      // keep the server alive or continue?
+      // callback();
+    });
   });
 }
 
