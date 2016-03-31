@@ -85,6 +85,8 @@ Let's move on to consider a React-based standalone page, that is not intended to
 
 We would however want to make sure that we have some page metadata in place, including social sharing images. We also wish avoid getting unnecessary `iFrameResizer` code into `index.html`.
 
+We will achieve this with the following `gulpfile.js`:
+
 ```
 
 var gulp = require('gulp');
@@ -119,11 +121,13 @@ project-name-master-a3d8f0/bundle-ff09a8sd0a.js
 project-name-master-a3d8f0/index.html
 ```
 
-Now `embed.js`, `resize.js` and `embed-codes.html` are missing. The images mentioned in pageDefs have been included, as required. (Note: this might not work currently in the webpack version)
+Now `embed.js`, `resize.js` and `embed-codes.html` are missing. The images mentioned in pageDefs have been included, as required. (Note: this might not work currently in the webpack version).
 
-# Example 3: Multi-embed project
+This type of configuration is used in the internal `lucify-refugees-article`. 
 
-What if we wish to multiple components in one project of which we wish to build embeds? In this case we use the `embedDefs` option to pass an array of embed definitions. Each embed definition contains the file system path to the React component and a target URL path, relative to `assetContext`.
+## Example 3: Multi-embed project
+
+What if we wish to multiple components in one project of which we wish to build embeds? In this case we use the `embedDefs` option to pass an array of embed definitions. Each embed definition contains the file system path to the React component and a target URL path, relative to `assetContext`. Appropriate `gulpfile.js` is below:
 
 ```
 var gulp = require('gulp');
@@ -155,7 +159,7 @@ project-name-master-a3d8f0/resize.js
 
 This type of configuration is used for building some of the embeds associated with the Finnish articles.
 
-# Example 3: Multi-page `react-router` project
+## Example 4: Multi-page `react-router` project
 
 In this case we are building a whole React-router-based website, with each page having their own page metadata, etc. 
 
@@ -211,15 +215,15 @@ GitHub will be notified if a `GITHUB_TOKEN` environment variable is defined.
 
 `lucify-component-builder` includes by default the configuration for Lucify's different environments. The environment to be used is defined by the environment variable `LUCIFY_ENV`. Valid enviroments are `test`, `production` and `development`.
 
-`lucify-deploy` should always be run with the AWS credentials 
+`lucify-deploy` should always be run with the AWS credentials. 
 
-Any of the configuration can be overridden by using options.
+Any of the configuration can be overridden by using [options](https://github.com/lucified/lucify-component-builder/blob/master/API.md).
 
 ## Notes on bootstrapping
 
 The way `lucify-component-builder` bootstraps the React components involves creating a temporary jsx file, that will serve an entry point for `webpack`. While this is conceptually quite ugly, it reduced significant copy-paste reuse of such bootstrapping code. 
 
-# Test projects
+## Test projects
 
 The `test-projects` folder contains a simple test/example projects for each of the four examples presented here. Be sure to run `npm install` within those project's root foldes before trying `gulp` or `gulp dist`. Note that development mode (`gulp`) does not unfortunately work in a meaningful way for multi-embed projects.
 
