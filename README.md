@@ -215,7 +215,7 @@ GitHub will be notified if a `GITHUB_TOKEN` environment variable is defined.
 
 `lucify-component-builder` includes by default the configuration for Lucify's different environments. The environment to be used is defined by the environment variable `LUCIFY_ENV`. Valid enviroments are `test`, `production` and `development`.
 
-`lucify-deploy` should always be run with the AWS credentials. 
+`lucify-deploy` should always be run with the AWS credentials appropriate for the current `LUCIFY_ENV`. 
 
 Any of the configuration can be overridden by using [options](https://github.com/lucified/lucify-component-builder/blob/master/API.md).
 

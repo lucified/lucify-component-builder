@@ -7,24 +7,24 @@ TODO: this is work-in-progress
 
 ### General options
 
-`assetContext`: HTTP path for the entry point `ìndex.html`, including trailing slash, not including `baseUrl` defaults to `''`.
-`flow`: Flow id of flow in which to send notifications
-`maxAge`: The maxAge for HTTP cache headers for assets with rev urls
-`bucket`: The s3 bucket in which to deploy
-`baseUrl`: The base url on the server, including trailing slash, not including path. e.g. `http://www.example.com/`
-`commit`: Git commit hash
-`branch`: Git branch name
-`project`: GitHub project name
-`org`: GitHub organization name,
-`embedCodes`: Set to `true` to generate `embed-codes.html` along boostrapping `index.html`
+-`assetContext`: HTTP path for the entry point `ìndex.html`, including trailing slash, not including `baseUrl` defaults to `''`.
+-`flow`: Flow id of flow in which to send notifications
+-`maxAge`: The maxAge for HTTP cache headers for assets with rev urls
+-`bucket`: The s3 bucket in which to deploy
+-`baseUrl`: The base url on the server, including trailing slash, not including path. e.g. `http://www.example.com/`
+-`commit`: Git commit hash
+-`branch`: Git branch name
+-`project`: GitHub project name
+-`org`: GitHub organization name,
+-`embedCodes`: Set to `true` to generate `embed-codes.html` along boostrapping `index.html`
 
 ### Options for bootstrapping `index.html`
 
-`iframeResize`: Set to `true` to bundle IFrame resizing code into bootstrapping index.html. Defaults to `true`
-`reactRouter`: Set to `true` to bootstrap with react-router -based project, instead of bootstrapping as React component. Defaults to `false`.
-`googleAds`: Set to `true` to enable script src snippet in `index.html` for Google ads. Defaults to `true`. TODO: should be Google Ads Id instead of boolean.
-`googleAnalytics`: Set to `true` to enable script src snippet in `index.html` for Google Analytics. Defaults to `true`. TODO: should be Google Analytics Id instead of boolean.
-`riveted`: Set to `true` to enable script src snippet in `index.html` for Riveted.js. Defaults to `true`.
+-`iframeResize`: Set to `true` to bundle IFrame resizing code into bootstrapping index.html. Defaults to `true`
+-`reactRouter`: Set to `true` to bootstrap with react-router -based project, instead of bootstrapping as React component. Defaults to `false`.
+-`googleAds`: Set to `true` to enable script src snippet in `index.html` for Google ads. Defaults to `true`. TODO: should be Google Ads Id instead of boolean.
+-`googleAnalytics`: Set to `true` to enable script src snippet in `index.html` for Google Analytics. Defaults to `true`. TODO: should be Google Analytics Id instead of boolean.
+-`riveted`: Set to `true` to enable script src snippet in `index.html` for Riveted.js. Defaults to `true`.
 
 ### Options for single-page projects
 
@@ -38,17 +38,13 @@ TODO: this is work-in-progress
 
 ### Options for multi-page React-router projects
 
-`pageDefs`: list of objects containing page metadata for all entry points. For each object, the same attributes as allowed for `pageDef` are recognized. They are optional. However, a `path` attribute is mandatory. It is the page's web path below `assetContext`.
+-`pageDefs`: list of objects containing page metadata for all entry points. For each object, the same attributes as allowed for `pageDef` are recognized. They are optional. However, a `path` attribute is mandatory. It is the page's web path below `assetContext`.
 
 ### Options for projects with multiple embeds
 
 `embedDefs`: object containing definitions of all embeds build within project. Recognizes the same attributes that are allowed for `pageDef`. They are optional. The following additional attributes are mandatory:
 - `path`: The embeds' web path below `assetContext`
 - `componentPath`: File system path to the React component bootstrapping the embed (`.jsx`).
-
-### Deprecated options
-
-`publishFromFolder`: Don't know whether this still works. Is currently defined as `dist` in all projects.
 
 ## `LUCIFY_ENV`
 
