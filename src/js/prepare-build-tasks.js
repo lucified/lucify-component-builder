@@ -148,6 +148,15 @@ function getJsFileName(edef) {
 }
 
 
+function generateMetaData(path) {
+  var data = {
+    stampUpdated: Math.floor(new Date().getTime() / 1000)
+  };
+  mkpath.sync(path);
+  fs.writeFileSync(j(path, 'lucify-metadata.json'), JSON.stringify(data));
+}
+
+
 function getTempFileName(edef) {
   var ret = edef.path === '' ? 'component.jsx' : 'component' + replaceall('/', '-', edef.path) + '.jsx';
   return ret;
@@ -156,6 +165,7 @@ function getTempFileName(edef) {
 
 function createJsxAndBundle(opts, context, edef) {
   var destPath = context.destPath + edef.path;
+  generateMetaData(destPath);
   return mergeStream(
       generateJSX(edef.reactRouter, edef.componentPath, getTempFileName(edef)),
       bundleComponent(destPath, getJsFileName(edef), getTempFileName(edef)));
@@ -333,10 +343,16 @@ function writeBuildArtifact(url, fileName, cb) {
   const fn = fileName || defaultArtifactFile;
   const folder = process.env.CIRCLE_ARTIFACTS;
   if(folder)
-    require('fs').writeFileSync(`${folder}/${fn}`, JSON.stringify({url: url}));
+    fs.writeFileSync(`${folder}/${fn}`, JSON.stringify({url: url}));
   cb();
 }
 
+
+
+//
+// Setting up of tasks for CLI
+// ---------------------------
+//
 
 var prepareBuildTasks = function(gulp, opts) {
   if (!opts) {
