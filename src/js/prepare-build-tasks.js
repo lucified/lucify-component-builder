@@ -89,6 +89,14 @@ function copyTempJsx() {
 }
 
 
+function generateMetaData(path) {
+  var data = {
+    stampUpdated: Math.floor(new Date().getTime() / 1000)
+  };
+  fs.writeFileSync(j(path, 'lucify-metadata.json'), JSON.stringify(data));
+}
+
+
 /*
  * Create JSX and run webpack to create the associated bundle
  *
@@ -102,8 +110,8 @@ function copyTempJsx() {
 function createJsxAndBundle(destPath, componentPath, reactRouter, pageDefs, watch, assetContext, babelPaths, callback) {
   var tempFileName = getTempFileName(componentPath);
   generateJSX(reactRouter, componentPath, tempFileName);
+  generateMetaData(destPath);
   var entryPoint = './temp/' + tempFileName;
-
   bundleWebpack(
     entryPoint,
     null,
@@ -281,9 +289,10 @@ function writeBuildArtifact(url, fileName, cb) {
   const fn = fileName || defaultArtifactFile;
   const folder = process.env.CIRCLE_ARTIFACTS;
   if(folder)
-    require('fs').writeFileSync(`${folder}/${fn}`, JSON.stringify({url: url}));
+    fs.writeFileSync(`${folder}/${fn}`, JSON.stringify({url: url}));
   cb();
 }
+
 
 
 //
