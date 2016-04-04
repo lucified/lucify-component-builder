@@ -74,6 +74,10 @@ function bundle(
     watch: watch
   };
 
+  if (!config.output.filename) {
+    config.output.filename = 'index-[hash].js';
+  }
+
   if(process.env.NODE_ENV === envs.STAGING || process.env.NODE_ENV === envs.PRODUCTION) {
     config.plugins = config.plugins.concat([
       new webpack.optimize.UglifyJsPlugin(),
