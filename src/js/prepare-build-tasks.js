@@ -101,17 +101,22 @@ function generateMetaData(path) {
  * Create JSX and run webpack to create the associated bundle
  *
  * destPath      -- path below which all files are created
- * componentPath -- path to React component to be bundled
+ * entryPoint    -- path to entry point for bundle
+ * componentPath -- path to React component to be bundled (only applies if entry point not defined)
  * reactRouter   -- enable react-router
  * pageDefs      -- page definitions for creating associated html files
  * watch         -- start watching with webback-dev-server
  *
  */
-function createJsxAndBundle(destPath, componentPath, reactRouter, pageDefs, watch, assetContext, babelPaths, callback) {
-  var tempFileName = getTempFileName(componentPath);
-  generateJSX(reactRouter, componentPath, tempFileName);
+function createJsxAndBundle(destPath, entryPoint, componentPath, reactRouter, pageDefs, watch, assetContext, babelPaths, callback) {
+
+  if (!entryPoint) {
+    var tempFileName = getTempFileName(componentPath);
+    generateJSX(reactRouter, componentPath, tempFileName);
+    entryPoint = './temp/' + tempFileName;
+  }
+
   generateMetaData(destPath);
-  var entryPoint = './temp/' + tempFileName;
   bundleWebpack(
     entryPoint,
     null,
@@ -132,10 +137,8 @@ var createJsxAndBundlePromisified = Promise.promisify(createJsxAndBundle);
  */
 function generateJSX(reactRouter, componentPath, tempFileName) {
   var bootstrapper = './bootstrap-component.jsx';
-  //var bootstrapper = require.resolve('./react-bootstrap/bootstrap-component.jsx');
   if (reactRouter) {
     bootstrapper = './bootstrap-react-router-component.jsx';
-    //bootstrapper = require.resolve('./react-bootstrap/bootstrap-react-router-component.jsx');
   }
   var templateFile = require.resolve('./react-bootstrap/component-template.jsx');
   var template = fs.readFileSync(templateFile, 'utf8');
@@ -162,7 +165,7 @@ function bundleComponents(opts, context, assetContext, callback) {
   if (!opts.embedDefs) {
     var watch = context.dev; // TODO
     var componentPath = 'index.js';
-    createJsxAndBundle(context.destPath, componentPath,
+    createJsxAndBundle(context.destPath, opts.entryPoint, componentPath,
       opts.reactRouter, pageDefs, watch, assetContext, opts.babelPaths, callback);
     return;
   }
@@ -178,7 +181,7 @@ function bundleComponents(opts, context, assetContext, callback) {
     var watch = false;
     var pageDef = pageDefUtils.enrichPageDef(edef, opts.baseUrl, assetContext);
     pageDef.path = '';
-    return createJsxAndBundlePromisified(destPath, edef.componentPath,
+    return createJsxAndBundlePromisified(destPath, null, edef.componentPath,
       opts.reactRouter, [pageDef], watch, assetContext + edef.path.substring(1) + '/', opts.babelPaths);
   });
 
@@ -318,7 +321,6 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap.bind(null, context, deployOpt.assetContext));
   gulp.task('bundle-resize', bundleResize.bind(null, context, opts.assetContext));
   gulp.task('embed-codes', embedCodeUtils.embedCodes.bind(null, context, opts, deployOpt.baseUrl, deployOpt.assetContext));
-  //gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
   gulp.task('notify', notify.bind(null, deployOpt.project,
       deployOpt.org,

@@ -7,7 +7,7 @@ const gutil         = require('gulp-util'),
   parseArgs         = require('minimist'),
   envs              = require('./envs.js'),
   autoprefixer      = require('autoprefixer'),
-  postcssReporter   = require('postcss-reporter');
+  postcssReporter   = require('postcss-reporter'),
   getport           = require('getport');
 
 var options = parseArgs(process.argv, {
@@ -123,7 +123,7 @@ function htmlWebpackPluginsFromPageDefs(pageDefs, watch) {
     }
 
     var config = {
-      template: require.resolve('../www/embed.hbs'),
+      template: item.indexHtmlTemplate || require.resolve('../www/embed.hbs'),
       inject: false,
       filename: path.join(itemPath, 'index.html'),
 

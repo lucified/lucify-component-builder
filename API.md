@@ -7,7 +7,8 @@ TODO: this is work-in-progress
 
 ### General options
 
-- `assetContext`: HTTP path for the entry point `ìndex.html`, including trailing slash, not including `baseUrl` defaults to `''`.
+- `entryPoint`: Absolute path to entry point for Javascript bundle. When this option is defined, the file at given path will be directly used as entry point for the main javascript bundle.
+- `assetContext`: HTTP path for the entry point `ìndex.html`, including trailing slash, not including `baseUrl`. Defaults to `''`.
 - `flow`: Flow id of flow in which to send notifications
 - `maxAge`: The maxAge for HTTP cache headers for assets with rev urls
 - `bucket`: The s3 bucket in which to deploy
@@ -17,24 +18,23 @@ TODO: this is work-in-progress
 - `project`: GitHub project name
 - `org`: GitHub organization name,
 - `embedCodes`: Set to `true` to generate `embed-codes.html` along boostrapping `index.html`
+- `embedCodesHtmlTemplate`: Absolute path to page template for `embed-codes.html` page. Defaults to (this)[https://github.com/lucified/lucify-component-builder/blob/master/src/www/embed-codes.hbs] template.
+- `reactRouter`: Set to `true` to use react-router -bootstrapping code as entry point, instead of bootstrapping as React component. Defaults to `false`. This option only applies when `entryPoint` is not defined.
 
-### Options for bootstrapping `index.html`
+### Options for bootstrapping index.html
 
-- `iframeResize`: Set to `true` to bundle IFrame resizing code into bootstrapping index.html. Defaults to `true`
-- `reactRouter`: Set to `true` to bootstrap with react-router -based project, instead of bootstrapping as React component. Defaults to `false`.
-- `googleAds`: Set to `true` to enable script src snippet in `index.html` for Google ads. Defaults to `true`. TODO: should be Google Ads Id instead of boolean.
-- `googleAnalytics`: Set to `true` to enable script src snippet in `index.html` for Google Analytics. Defaults to `true`. TODO: should be Google Analytics Id instead of boolean.
-- `riveted`: Set to `true` to enable script src snippet in `index.html` for Riveted.js. Defaults to `true`.
-
-### Options for single-page projects
-
-`pageDef`: object containing page metadata for entry point. The following attributes are recognized:
-- `title`: Page title
-- `description`: Description metadata for social sharing, etc,
-- `ogType`: Open graph type
-- `twitterImage`: Filename for twitter card image
-- `openGraphImage`: Filename for open graph (Facebook) image
-- `schemaImage`: 'Filename for schema image
+- `pageDef`: object containing page metadata for entry point. The following attributes are recognized:
+    + `title`: Page title
+    + `description`: Description metadata for social sharing, etc,
+    + `ogType`: Open graph type
+    + `twitterImage`: Filename for twitter card image
+    + `openGraphImage`: Filename for open graph (Facebook) image
+    + `schemaImage`: 'Filename for schema image
+    + `googleAds`: Set to `true` to enable script src snippet in `index.html` for Google ads. Defaults to `true`. TODO: should be Google Ads Id instead of boolean.
+    + `googleAnalytics`: Set to `true` to enable script src snippet in `index.html` for Google Analytics. Defaults to `true`. TODO: should be Google Analytics Id instead of boolean.
+    + `riveted`: Set to `true` to enable script src snippet in `index.html` for Riveted.js. Defaults to `true`.
+    + `iframeResize`: Set to `true` to bundle IFrame resizing code into bootstrapping index.html. Defaults to `true`
+    + `indexHtmlTemplate`: Absolute path to handlebars template for `index.html`. Defaults to (this)[https://github.com/lucified/lucify-component-builder/blob/master/src/www/embed.hbs] template.
 
 ### Options for multi-page React-router projects
 
