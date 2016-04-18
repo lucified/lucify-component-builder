@@ -7,7 +7,7 @@ const gutil         = require('gulp-util'),
   parseArgs         = require('minimist'),
   envs              = require('./envs.js'),
   autoprefixer      = require('autoprefixer'),
-  postcssReporter   = require('postcss-reporter');
+  postcssReporter   = require('postcss-reporter'),
   getport           = require('getport');
 
 var options = parseArgs(process.argv, {
