@@ -189,4 +189,13 @@ describe('build test projects', () => {
     done();
   });
 
+  it('creates basic assets for templates-test-project', done => {
+    'test-projects/templates-test-project/dist/hello-world/lucify-metadata.json'.should.be.a.file().with.json;
+    'test-projects/templates-test-project/dist/hello-world/index.html'.should.be.a.file().and.not.empty;
+    'test-projects/templates-test-project/dist/hello-world/embed-codes.html'.should.be.a.file().and.not.empty;
+    'test-projects/templates-test-project/dist/hello-world/index.html'.should.have.content.that.match(/HELLO/);
+    'test-projects/templates-test-project/dist/hello-world/embed-codes.html'.should.have.content.that.match(/HELLO EMBED/);
+    done();
+  });
+
 });
