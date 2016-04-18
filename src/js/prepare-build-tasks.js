@@ -132,10 +132,8 @@ var createJsxAndBundlePromisified = Promise.promisify(createJsxAndBundle);
  */
 function generateJSX(reactRouter, componentPath, tempFileName) {
   var bootstrapper = './bootstrap-component.jsx';
-  //var bootstrapper = require.resolve('./react-bootstrap/bootstrap-component.jsx');
   if (reactRouter) {
     bootstrapper = './bootstrap-react-router-component.jsx';
-    //bootstrapper = require.resolve('./react-bootstrap/bootstrap-react-router-component.jsx');
   }
   var templateFile = require.resolve('./react-bootstrap/component-template.jsx');
   var template = fs.readFileSync(templateFile, 'utf8');
