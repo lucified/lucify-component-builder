@@ -123,7 +123,7 @@ function htmlWebpackPluginsFromPageDefs(pageDefs, watch) {
     }
 
     var config = {
-      template: require.resolve('../www/embed.hbs'),
+      template: item.indexHtmlTemplate || require.resolve('../www/embed.hbs'),
       inject: false,
       filename: path.join(itemPath, 'index.html'),
 
