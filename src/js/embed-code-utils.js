@@ -16,24 +16,24 @@ function embedCodes(context, opts, baseUrl, assetContext, cb) {
 
   if (Array.isArray(opts.embedDefs)) {
     return mergeStream(opts.embedDefs.map(function(def) {
-      return embedCodesPage(context, baseUrl, assetContext, def.path, cb);
+      return embedCodesPage(context, baseUrl, assetContext, def.path, opts.embedCodesHtmlTemplate, cb);
     }));
   }
-  return embedCodesPage(context, baseUrl, assetContext, '', cb);
+  return embedCodesPage(context, baseUrl, assetContext, '', opts.embedCodesHtmlTemplate, cb);
 }
 
 
 /*
  * Generate embed codes
  */
-function embedCodesPage(context, baseUrl, assetContext, path, _cb) {
+function embedCodesPage(context, baseUrl, assetContext, path, embedCodesHtmlTemplate, _cb) {
 
   // for dev builds baseUrl is always localhost
   var urlPath = path.substring(1) + '/';
   var embedUrl = context.dev ? ('http://localhost:3000/' + urlPath) : baseUrl + assetContext + urlPath;
   var embedBaseUrl = context.dev ? ('http://localhost:3000/') : baseUrl + assetContext;
 
-  var templatePath = require.resolve('../../src/www/embed-codes.hbs');
+  var templatePath = embedCodesHtmlTemplate || require.resolve('../../src/www/embed-codes.hbs');
 
   return src(templatePath)
     .pipe(through2.obj(function(file, _enc, _cb) {
