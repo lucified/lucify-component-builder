@@ -316,7 +316,6 @@ var prepareBuildTasks = function(gulp, opts) {
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap.bind(null, context, deployOpt.assetContext));
   gulp.task('bundle-resize', bundleResize.bind(null, context, opts.assetContext));
   gulp.task('embed-codes', embedCodeUtils.embedCodes.bind(null, context, opts, deployOpt.baseUrl, deployOpt.assetContext));
-  //gulp.task('serve-prod', buildTools.serveProd);
   gulp.task('setup-dist-build', setupDistBuild);
   gulp.task('notify', notify.bind(null, deployOpt.project,
       deployOpt.org,
