@@ -32,7 +32,7 @@ function getConfig(
       modulesDirectories: ['node_modules'],
     },
     module: {
-      loaders: getLoaders(babelPaths, pageDefs ? pageDefs[0].helperPath : '')
+      loaders: getLoaders(babelPaths)
     },
     resolveLoader: {
       root: [path.resolve(__dirname, '../node_modules')]
@@ -277,15 +277,11 @@ function plainBundle(config, callback) {
 /*
  * Get the webpack loaders object for the webpack configuration
  */
-function getLoaders(babelPaths, helperDir) {
+function getLoaders(babelPaths) {
 
   if (!babelPaths) {
     babelPaths = [];
   }
-  if (!helperDir) {
-    helperDir = '';
-  }
-  console.log(helperDir);
 
   return [{
     test: /\.(js|jsx)$/,
@@ -313,7 +309,7 @@ function getLoaders(babelPaths, helperDir) {
     loaders: [require.resolve('file-loader') + '?name=[name]-[hash:12].[ext]']
   }, {
     test: /\.hbs$/,
-    loader: require.resolve('handlebars-loader') + '?helperDirs[]=' + helperDir
+    loader: require.resolve('handlebars-loader')
   }];
 }
 
