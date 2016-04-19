@@ -1,28 +1,25 @@
 
-var gulp = require('gulp');
-var path = require('path');
-var fs = require('fs');
-var mkpath = require('mkpath');
-var del = require('del');
-var parseArgs = require('minimist');
-var replaceall = require('replaceall');
-var request = require('request');
-var git = require('git-rev-sync');
-var gutil = require('gulp-util');
-var s3 = require('./s3.js');
+const gulp = require('gulp');
+const path = require('path');
+const fs = require('fs');
+const mkpath = require('mkpath');
+const del = require('del');
+const parseArgs = require('minimist');
+const replaceall = require('replaceall');
+const gutil = require('gulp-util');
+const s3 = require('./s3.js');
 const ENVS = require('./envs.js');
 const defaultArtifactFile = 'build-info.json';
-var Promise = require('bluebird');
+const Promise = require('bluebird');
 
-//var buildTools = require('lucify-build-tools');
-var bundleWebpack = require('./bundle-webpack.js');
+const bundleWebpack = require('./bundle-webpack.js');
 
-var embedCodeUtils = require('./embed-code-utils.js');
-var pageDefUtils = require('./page-def-utils.js');
+const embedCodeUtils = require('./embed-code-utils.js');
+const pageDefUtils = require('./page-def-utils.js');
 
-var githubDeploy = require('./github-deploy.js');
+const githubDeploy = require('./github-deploy.js');
 
-var j = path.join;
+const j = path.join;
 
 const notify = require('./flowdock-notify');
 
