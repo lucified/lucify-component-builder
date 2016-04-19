@@ -5,11 +5,7 @@ var s3 = require('../src/js/s3');
 var fs = require('fs');
 var debug = require('gulp-debug');
 var through2 = require('through2').obj;
-var awspath = '../node_modules/gulp-awspublish/node_modules/aws-sdk';
-if (fs.existsSync(__dirname+'/../node_modules/aws-sdk/package.json')) {
-  awspath = '../node_modules/aws-sdk';
-}
-var AWS = require(awspath);
+var AWS = require('aws-sdk');
 
 var _ = require('lodash');
 AWS.config.update({region: process.env.AWS_REGION || 'eu-west-1'});

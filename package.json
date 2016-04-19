@@ -72,6 +72,7 @@
     "webpack-dev-server": "^1.14.1"
   },
   "devDependencies": {
+    "aws-sdk": "^2.3.3",
     "chai": "^1.10.0",
     "chai-fs": "^0.1.0",
     "event-stream": "^3.3.2",
