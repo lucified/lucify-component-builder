@@ -2,6 +2,7 @@ const gutil         = require('gulp-util'),
   extend            = require('object-extend'),
   WebpackDevServer  = require('webpack-dev-server'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
+  ExtractTextPlugin = require('extract-text-webpack-plugin'),
   webpack           = require('webpack'),
   path              = require('path'),
   parseArgs         = require('minimist'),
@@ -15,6 +16,69 @@ var options = parseArgs(process.argv, {
     hot: false
   }
 });
+
+
+function getConfig(
+  entryPoint,
+  outputFileName,
+  destPath,
+  pageDefs,
+  watch,
+  assetContext,
+  babelPaths) {
+
+  const config = {
+    resolve: {
+      modulesDirectories: ['node_modules'],
+    },
+    module: {
+      loaders: getLoaders(babelPaths, pageDefs ? pageDefs[0].helperPath : '')
+    },
+    resolveLoader: {
+      root: [path.resolve(__dirname, '../node_modules')]
+    },
+    output: {
+      filename: outputFileName,
+      path: process.cwd() + '/' + destPath,
+      publicPath: '/' + assetContext
+    },
+    postcss: function () {
+      return [
+        autoprefixer,
+        postcssReporter
+      ];
+    },
+    entry: entryPoint,
+    plugins: htmlWebpackPluginsFromPageDefs(pageDefs, watch),
+    devServer: {
+      publicPath: '/',
+    }
+  };
+
+  if (!config.output.filename) {
+    config.output.filename = 'index-[hash].js';
+  }
+
+  if (process.env.NODE_ENV === envs.STAGING || process.env.NODE_ENV === envs.PRODUCTION) {
+    config.plugins = config.plugins.concat([
+      new webpack.optimize.UglifyJsPlugin(),
+      new webpack.optimize.DedupePlugin(),
+      new webpack.optimize.OccurenceOrderPlugin()
+    ]);
+
+  }
+
+
+  if (pageDefs && pageDefs[0].externalStyles) {
+    const extractPlugin = new ExtractTextPlugin(config.stylesheetName || 'styles-[contenthash].css');
+    config.plugins = config.plugins.concat([extractPlugin]);
+    config.module.loaders = config.module.loaders.concat(getStyleLoaders(true));
+  } else {
+    config.module.loaders = config.module.loaders.concat(getStyleLoaders());
+  }
+
+  return config;
+}
 
 /*
  *  Bundle a component
@@ -44,48 +108,15 @@ function bundle(
   babelPaths,
   callback) {
 
-  var config = {
-    resolve: {
-      modulesDirectories: ['node_modules']
-    },
-    module: {
-      loaders: getLoaders(babelPaths)
-    },
-    resolveLoader: {
-      root: [path.resolve(__dirname, '../node_modules')]
-    },
-    output: {
-      filename: outputFileName,
-      path: process.cwd() + '/' + destPath,
-      publicPath: '/' + assetContext
-    },
-    postcss: function () {
-      return [
-        autoprefixer,
-        postcssReporter
-      ];
-    },
-    entry: entryPoint,
-    plugins: htmlWebpackPluginsFromPageDefs(pageDefs, watch),
-    // enabling watch here seems to fix a weird problem where
-    // the bundle would seemingly randomly be built incorrectly
-    // when using the webpack-dev-server, resulting in TypeError
-    // for embed-decorator in the browser console
-    watch: watch
-  };
-
-  if (!config.output.filename) {
-    config.output.filename = 'index-[hash].js';
-  }
-
-  if(process.env.NODE_ENV === envs.STAGING || process.env.NODE_ENV === envs.PRODUCTION) {
-    config.plugins = config.plugins.concat([
-      new webpack.optimize.UglifyJsPlugin(),
-      new webpack.optimize.DedupePlugin(),
-      new webpack.optimize.OccurenceOrderPlugin()
-    ]);
-    //console.log(config.plugins);
-  }
+  const config = getConfig(
+    entryPoint,
+    outputFileName,
+    destPath,
+    pageDefs,
+    watch,
+    assetContext,
+    babelPaths
+  );
 
   if (watch) {
     devServerBundle(config, destPath);
@@ -93,6 +124,9 @@ function bundle(
   }
   plainBundle(config, callback);
 }
+
+
+
 
 //
 // Private functions
@@ -243,11 +277,15 @@ function plainBundle(config, callback) {
 /*
  * Get the webpack loaders object for the webpack configuration
  */
-function getLoaders(babelPaths) {
+function getLoaders(babelPaths, helperDir) {
 
   if (!babelPaths) {
     babelPaths = [];
   }
+  if (!helperDir) {
+    helperDir = '';
+  }
+  console.log(helperDir);
 
   return [{
     test: /\.(js|jsx)$/,
@@ -269,30 +307,54 @@ function getLoaders(babelPaths) {
   }, {
     test: /\.svg$/,
     loader: require.resolve('url-loader') + '?limit=10000&mimetype=image/svg+xml'
-  }, {
-    test: /\.scss$/,
-    loaders: [
-      require.resolve('style-loader'),
-      require.resolve('css-loader') + '?modules&importLoaders=2&localIdentName=[name]__[local]___[hash:base64:5]',
-      require.resolve('postcss-loader'),
-      require.resolve('sass-loader')
-    ]
-  }, {
-    test: /\.less$/,
-    loaders: [
-      require.resolve('style-loader'),
-      require.resolve('css-loader') + '?modules&importLoaders=2&localIdentName=[name]__[local]___[hash:base64:5]',
-      require.resolve('postcss-loader'),
-      require.resolve('less-loader')
-    ]
   },
   {
     test: /\.(jpeg|jpg|gif|png)$/,
     loaders: [require.resolve('file-loader') + '?name=[name]-[hash:12].[ext]']
   }, {
     test: /\.hbs$/,
-    loader: require.resolve('handlebars-loader')
+    loader: require.resolve('handlebars-loader') + '?helperDirs[]=' + helperDir
   }];
 }
 
-module.exports = bundle;
+
+function getStyleLoader(isSass, extract) {
+  const cssSpec = '?modules&importLoaders=2&localIdentName=[name]__[local]___[hash:base64:5]';
+  if (extract) {
+    return {
+      test: isSass ? /\.scss$/ : /\.less$/,
+      // loaders: [
+      //   require.resolve('file-loader') + '?name=[name]-[hash].css',
+      //   require.resolve('extract-loader'),
+      //   require.resolve('css-loader') + cssSpec,
+      //   require.resolve('postcss-loader'),
+      //   require.resolve(isSass ? 'sass-loader' : 'less-loader')
+      // ]
+      loader: ExtractTextPlugin.extract('style-loader', [
+        require.resolve('css-loader') + cssSpec,
+        require.resolve('postcss-loader'),
+        require.resolve(isSass ? 'sass-loader' : 'less-loader')
+      ])
+    };
+  }
+  return {
+    test: isSass ? /\.scss$/ : /\.less$/,
+    loaders: [
+      require.resolve('style-loader'),
+      require.resolve('css-loader') + cssSpec,
+      require.resolve('postcss-loader'),
+      require.resolve(isSass ? 'sass-loader' : 'less-loader')
+    ]
+  }
+}
+
+function getStyleLoaders(extract) {
+  return [
+    getStyleLoader(true, extract),
+    getStyleLoader(false, extract),
+  ];
+}
+
+
+module.exports.bundle = bundle;
+module.exports.getConfig = getConfig;

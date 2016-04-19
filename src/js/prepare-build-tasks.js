@@ -24,7 +24,9 @@ var githubDeploy = require('./github-deploy.js');
 
 var j = path.join;
 
+const notify = require('./flowdock-notify');
 
+const computeOptions = require('./deploy-options');
 //
 // Detect options and prepare build context accordingly
 // ----------------------------------------------------
@@ -117,7 +119,7 @@ function createJsxAndBundle(destPath, entryPoint, componentPath, reactRouter, pa
   }
 
   generateMetaData(destPath);
-  bundleWebpack(
+  bundleWebpack.bundle(
     entryPoint,
     null,
     destPath,
@@ -200,7 +202,7 @@ function bundleEmbedBootstrap(context, assetContext, callback) {
   var destPath = context.destPath;
   var pageDefs = null;
   var watch = false;
-  return bundleWebpack(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, null, callback);
+  return bundleWebpack.bundle(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, null, callback);
 }
 
 /*
@@ -212,7 +214,7 @@ function bundleResize(context, assetContext, callback) {
   var destPath = context.destPath;
   var pageDefs = null;
   var watch = false;
-  return bundleWebpack(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, null, callback);
+  return bundleWebpack.bundle(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, null, callback);
 }
 
 /*
@@ -237,46 +239,6 @@ function setupDistBuild(cb) {
 }
 
 
-function notify(project, _org, branch, env, url, cb) {
-
-  // we still support also the legacy flowdock PUSH api
-  // notification, which will be delivered if a FLOW_TOKEN
-  // is defined.
-
-  if (!process.env.FLOW_TOKEN) {
-    cb();
-    return;
-  }
-
-  var gitMessage = git.message();
-
-  var options = {
-    url: `https://api.flowdock.com/v1/messages/team_inbox/${process.env.FLOW_TOKEN}`,
-    method: 'POST',
-    json: true,
-    body: {
-      'source': 'CircleCI',
-      //"from_name": "Mr. Robot",
-      'from_address': 'deploy@lucify.com',
-      'subject': `Deployed branch ${project}/${branch} to ${env}`,
-      'content': `<p>${gitMessage}</p> <p>${url}</p>`,
-      'project': project,
-      'tags':  ['#deployment', `#${env}`]
-    }
-  };
-  request(options, (error, res, body) => {
-    if(error) {
-      gutil.log(error);
-      return cb();
-    }
-    if(res.statusCode != 200) {
-      gutil.log(`STATUS: ${res.statusCode}`);
-      gutil.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-      gutil.log(`BODY: ${JSON.stringify(body)}`);
-    }
-    cb();
-  });
-}
 
 
 function getEnv() {
@@ -285,6 +247,11 @@ function getEnv() {
   if(process.env.NODE_ENV)
     return process.env.NODE_ENV;
   return ENVS.TEST;
+}
+
+function clean(folder) {
+  return del(folder || 'dist')
+    .catch(console.log);
 }
 
 
@@ -311,7 +278,7 @@ var prepareBuildTasks = function(gulp, opts) {
   // set default for embedCodes option to true
   opts.embedCodes = opts.embedCodes === false ? false : true;
 
-  const deployOpt = require('./deploy-options')(getEnv(), opts);
+  const deployOpt = computeOptions(getEnv(), opts);
 
   context.assetPath = !deployOpt.assetContext ? '' : deployOpt.assetContext;
 
@@ -362,5 +329,8 @@ var prepareBuildTasks = function(gulp, opts) {
 
 };
 
+prepareBuildTasks.computeOptions = computeOptions.bind(null, getEnv());
+prepareBuildTasks.webpackConf = bundleWebpack.getConfig;
+prepareBuildTasks.clean = clean;
 
 module.exports = prepareBuildTasks;
