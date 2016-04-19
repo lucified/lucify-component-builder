@@ -331,6 +331,7 @@ var prepareBuildTasks = function(gulp, opts) {
 
 prepareBuildTasks.computeOptions = computeOptions.bind(null, getEnv());
 prepareBuildTasks.webpackConf = bundleWebpack.getConfig;
+prepareBuildTasks.bundle = bundleWebpack.plainBundle;
 prepareBuildTasks.clean = clean;
 
 module.exports = prepareBuildTasks;

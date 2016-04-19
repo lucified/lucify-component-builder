@@ -357,4 +357,5 @@ function getStyleLoaders(extract) {
 
 
 module.exports.bundle = bundle;
+module.exports.plainBundle = plainBundle;
 module.exports.getConfig = getConfig;
