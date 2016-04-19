@@ -34,8 +34,8 @@ TODO: this is work-in-progress
     + `googleAnalytics`: Set to `true` to enable script src snippet in `index.html` for Google Analytics. Defaults to `true`. TODO: should be Google Analytics Id instead of boolean.
     + `riveted`: Set to `true` to enable script src snippet in `index.html` for Riveted.js. Defaults to `true`.
     + `iframeResize`: Set to `true` to bundle IFrame resizing code into bootstrapping index.html. Defaults to `true`
-    + `indexHtmlTemplate`: Absolute path to handlebars template for `index.html`. Defaults to (this)[https://github.com/lucified/lucify-component-builder/blob/master/src/www/embed.hbs] template.
-
+    + `indexHtmlTemplate`: Absolute path to handlebars template for `index.html`. Defaults to [this](https://github.com/lucified/lucify-component-builder/blob/master/src/www/embed.hbs) template.
+    + `externalStyles`: Set to `true` to get [external stylesheets](https://github.com/webpack/extract-text-webpack-plugin). This option is only checked from the first `pageDef` element and controls all of them.
 ### Options for multi-page React-router projects
 
 - `pageDefs`: list of objects containing page metadata for all entry points. For each object, the same attributes as allowed for `pageDef` are recognized. They are optional. However, a `path` attribute is mandatory. It is the page's web path below `assetContext`.
