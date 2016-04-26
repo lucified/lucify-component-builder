@@ -63,7 +63,8 @@ function getConfig(
     process.env.NODE_ENV = process.env.LUCIFY_ENV;
   }
   const NODE_ENV = process.env.NODE_ENV;
-  if(NODE_ENV === envs.STAGING || NODE_ENV === envs.PRODUCTION) {
+  const optimize = NODE_ENV === envs.STAGING || NODE_ENV === envs.PRODUCTION;
+  if(optimize) {
     config.plugins = config.plugins.concat([
       new webpack.optimize.UglifyJsPlugin(),
       new webpack.optimize.DedupePlugin(),
@@ -80,6 +81,9 @@ function getConfig(
   } else {
     config.module.loaders = config.module.loaders.concat(getStyleLoaders());
   }
+
+  config.module.loaders = config.module.loaders.concat(getImageLoaders(optimize));
+
 
   return config;
 }
@@ -305,16 +309,31 @@ function getLoaders(babelPaths) {
       ]
     }
   }, {
-    test: /\.svg$/,
-    loader: require.resolve('url-loader') + '?limit=10000&mimetype=image/svg+xml'
-  },
-  {
-    test: /\.(jpeg|jpg|gif|png)$/,
-    loaders: [require.resolve('file-loader') + '?name=[name]-[hash:12].[ext]']
-  }, {
     test: /\.hbs$/,
     loader: require.resolve('handlebars-loader')
   }];
+}
+
+function getImageLoaders(optimize) {
+  const loaders = [
+    require.resolve('file-loader') + '?name=[name]-[hash:12].[ext]',
+  ];
+
+  if (optimize) {
+    const opt = '?{verbose: true, progressive:true, optimizationLevel: 7, interlaced: false, pngquant:{quality: "65-90", speed: 4}}';
+    loaders.push(require.resolve('image-webpack-loader') + opt);
+  }
+
+  return [
+    {
+      test: /\.svg$/,
+      loader: require.resolve('url-loader') + '?limit=10000&mimetype=image/svg+xml'
+    },
+    {
+      test: /\.(jpeg|jpg|gif|png)$/,
+      loaders
+    }
+  ]
 }
 
 
@@ -323,13 +342,6 @@ function getStyleLoader(isSass, extract) {
   if (extract) {
     return {
       test: isSass ? /\.scss$/ : /\.less$/,
-      // loaders: [
-      //   require.resolve('file-loader') + '?name=[name]-[hash].css',
-      //   require.resolve('extract-loader'),
-      //   require.resolve('css-loader') + cssSpec,
-      //   require.resolve('postcss-loader'),
-      //   require.resolve(isSass ? 'sass-loader' : 'less-loader')
-      // ]
       loader: ExtractTextPlugin.extract('style-loader', [
         require.resolve('css-loader') + cssSpec,
         require.resolve('postcss-loader'),
