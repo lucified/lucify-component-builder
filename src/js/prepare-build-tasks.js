@@ -7,23 +7,22 @@ const del = require('del');
 const parseArgs = require('minimist');
 const replaceall = require('replaceall');
 const gutil = require('gulp-util');
-const s3 = require('./s3.js');
-const ENVS = require('./envs.js');
 const defaultArtifactFile = 'build-info.json';
 const Promise = require('bluebird');
 
+const s3 = require('./s3.js');
+const ENVS = require('./envs.js');
 const bundleWebpack = require('./bundle-webpack.js');
-
 const embedCodeUtils = require('./embed-code-utils.js');
 const pageDefUtils = require('./page-def-utils.js');
-
 const githubDeploy = require('./github-deploy.js');
+const notify = require('./flowdock-notify');
+const computeOptions = require('./deploy-options');
 
 const j = path.join;
 
-const notify = require('./flowdock-notify');
 
-const computeOptions = require('./deploy-options');
+
 //
 // Detect options and prepare build context accordingly
 // ----------------------------------------------------
