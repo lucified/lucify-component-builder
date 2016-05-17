@@ -1,6 +1,4 @@
 
-@import '../../node_modules/lucify-commons/src/scss/styles-full.scss';
-
 .hello-world {
 
   h2 {
@@ -19,10 +17,6 @@
   h4 {
     font-size: 1.0rem;
     font-weight: normal;
-  }
-
-  p {
-    @include lucify-medium-paragraph()
   }
 
 }

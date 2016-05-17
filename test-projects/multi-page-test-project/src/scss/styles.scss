@@ -1,12 +1,4 @@
 
-:global {
-  @import '~lucify-commons/src/scss/styles-full.scss';
-}
-
-// import mixins, etc
-@import '~lucify-commons/src/scss/variables.scss';
-@import '~lucify-commons/src/scss/mixins.scss';
-
 
 .hello-world {
 
@@ -26,10 +18,6 @@
   h4 {
     font-size: 1.0rem;
     font-weight: normal;
-  }
-
-  p {
-    @include lucify-medium-paragraph()
   }
 
 }

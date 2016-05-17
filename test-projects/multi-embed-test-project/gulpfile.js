@@ -18,7 +18,6 @@ var embedDefs = [
 
 var opts = {
   embedDefs: embedDefs,
-  babelPaths: [require.resolve('lucify-commons').replace('index.js', 'src')],
   publishFromFolder: 'dist',
   assetContext: 'embed/',
 };

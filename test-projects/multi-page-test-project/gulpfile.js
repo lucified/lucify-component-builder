@@ -22,7 +22,6 @@ var defs = [
 
 
 var opts = {
-  babelPaths: [require.resolve('lucify-commons').replace('index.js', 'src')],
   publishFromFolder: 'dist',
   assetContext: 'test-path/',
   pageDefs: defs,
