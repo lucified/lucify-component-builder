@@ -52,100 +52,13 @@ var context = require('./build-context.js')(
 // -----------------
 //
 
-function getTempFileName(path) {
-  var ret = path === '' ? 'component.jsx' : 'component'
-    + replaceall('/', '-', path);
-    //+ replaceall('/', '-', path) + '.jsx';
-  return ret;
-}
-String.prototype.endsWith = function(suffix) {
-  return this.indexOf(suffix, this.length - suffix.length) !== -1;
-};
-
-
-
-function getTempFileName(componentPath) {
-  var ret = componentPath === '' ? 'component.jsx' : 'component' + replaceall('/', '-', componentPath) + '.jsx';
-  return ret;
-}
-
-/*
- * Copy bootstrap JSX files to the project's temp directory
- *
- * We cannot only set up the entry point and make it reference
- * resources via require('lucify-component-builder/...'), because
- * resolving those requires will not work for the test-projects,
- * which have a symlinked lucify-component-builder in their node_modules.
- *
- * The reason why that does not work is that require() uses the realPath
- *
- *
- */
-function copyTempJsx() {
-  return gulp.src(__dirname + '/react-bootstrap/*.jsx')
-    .pipe(gulp.dest('temp'));
-}
-
-
 function generateMetaData(path) {
-  var data = {
+  const data = {
     stampUpdated: Math.floor(new Date().getTime() / 1000)
   };
   fs.writeFileSync(j(path, 'lucify-metadata.json'), JSON.stringify(data));
 }
 
-
-/*
- * Create JSX and run webpack to create the associated bundle
- *
- * destPath      -- path below which all files are created
- * entryPoint    -- path to entry point for bundle
- * componentPath -- path to React component to be bundled (only applies if entry point not defined)
- * reactRouter   -- enable react-router
- * pageDefs      -- page definitions for creating associated html files
- * watch         -- start watching with webback-dev-server
- *
- */
-function createJsxAndBundle(destPath, entryPoint, componentPath, reactRouter, pageDefs, watch, assetContext, babelPaths, callback) {
-
-  if (!entryPoint) {
-    var tempFileName = getTempFileName(componentPath);
-    generateJSX(reactRouter, componentPath, tempFileName);
-    entryPoint = './temp/' + tempFileName;
-  }
-
-  generateMetaData(destPath);
-  bundleWebpack.bundle(
-    entryPoint,
-    null,
-    destPath,
-    pageDefs,
-    watch,
-    assetContext,
-    babelPaths,
-    callback);
-}
-
-var createJsxAndBundlePromisified = Promise.promisify(createJsxAndBundle);
-
-
-/*
- * Generate temporary JSX for wrapping the React
- * component at given path as an embeddable component
- */
-function generateJSX(reactRouter, componentPath, tempFileName) {
-  var bootstrapper = './bootstrap-component.jsx';
-  if (reactRouter) {
-    bootstrapper = './bootstrap-react-router-component.jsx';
-  }
-  var templateFile = require.resolve('./react-bootstrap/component-template.jsx');
-  var template = fs.readFileSync(templateFile, 'utf8');
-  var data = template.replace('%REPLACE%', componentPath)
-    .replace('%BOOTSTRAPPER%', bootstrapper);
-  var destpath = 'temp/';
-  mkpath.sync(destpath);
-  fs.writeFileSync(destpath + tempFileName, data);
-}
 
 
 //
@@ -154,41 +67,25 @@ function generateJSX(reactRouter, componentPath, tempFileName) {
 //
 
 /*
- * Bundle the main component(s)
+ * Bundle the main component
  */
-function bundleComponents(opts, context, assetContext, callback) {
+function bundleMainComponent(opts, context, assetContext, callback) {
 
-  var pageDefs = pageDefUtils.getEnrichedPageDefs(opts);
+  const pageDefs = pageDefUtils.getEnrichedPageDefs(opts);
+  const watch = context.dev; // TODO
+  const entryPoint = opts.entryPoint;
 
-  if (!opts.embedDefs) {
-    var watch = context.dev; // TODO
-    var componentPath = 'index.js';
-    createJsxAndBundle(context.destPath, opts.entryPoint, componentPath,
-      opts.reactRouter, pageDefs, watch, assetContext, opts.babelPaths, callback);
-    return;
-  }
+  generateMetaData(context.destPath);
 
-  // multi-embeds are built one at a time
-  //
-  // (while webpack allows for multiple entry points
-  // this seemed to get really complicated when considering
-  // the need to also create index.html:s within a directory
-  // structure)
-  var promises = opts.embedDefs.map(edef => {
-    var destPath = context.destPath + edef.path.substring(1);
-    var watch = false;
-    var pageDef = pageDefUtils.enrichPageDef(edef, opts.baseUrl, assetContext);
-    pageDef.path = '';
-    return createJsxAndBundlePromisified(destPath, null, edef.componentPath,
-      opts.reactRouter, [pageDef], watch, assetContext + edef.path.substring(1) + '/', opts.babelPaths);
-  });
-
-  return Promise.all(promises).then(function() {
-    callback();
-  }).error(function(err) {
-    gutil.log(`Error(s) during bundling ${err}`);
-  });
-
+  bundleWebpack.bundle(
+    entryPoint,
+    null,
+    context.destPath,
+    pageDefs,
+    watch,
+    assetContext,
+    opts.babelPaths,
+    callback);
 }
 
 
@@ -235,8 +132,6 @@ function setupDistBuild(cb) {
 }
 
 
-
-
 function getEnv() {
   if(process.env.LUCIFY_ENV)
     return process.env.LUCIFY_ENV;
@@ -244,6 +139,7 @@ function getEnv() {
     return process.env.NODE_ENV;
   return ENVS.TEST;
 }
+
 
 function clean(folder) {
   return del(folder || 'dist')
@@ -271,6 +167,16 @@ var prepareBuildTasks = function(gulp, opts) {
     opts = {};
   }
 
+  if (!opts.entryPoint) {
+    gutil.log('Error: entryPoint should be defined');
+    process.exit(1);
+  }
+
+  if (!fs.statSync(opts.entryPoint).isFile()) {
+    gutil.log(`Error: entryPoint ${opts.entryPoint} does not exist or is not a file`);
+    process.exit(1);
+  }
+
   // set default for embedCodes option to true
   opts.embedCodes = opts.embedCodes === false ? false : true;
 
@@ -279,8 +185,7 @@ var prepareBuildTasks = function(gulp, opts) {
   context.assetPath = !deployOpt.assetContext ? '' : deployOpt.assetContext;
 
   gulp.task('prepare-skeleton', prepareSkeleton);
-  gulp.task('copy-temp-jsx', copyTempJsx);
-  gulp.task('bundle-components', bundleComponents.bind(null, opts, context, deployOpt.assetContext));
+  gulp.task('bundle-main', bundleMainComponent.bind(null, opts, context, deployOpt.assetContext));
   gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap.bind(null, context, deployOpt.assetContext));
   gulp.task('bundle-resize', bundleResize.bind(null, context, opts.assetContext));
   gulp.task('embed-codes', embedCodeUtils.embedCodes.bind(null, context, opts, deployOpt.baseUrl, deployOpt.assetContext));
@@ -306,10 +211,9 @@ var prepareBuildTasks = function(gulp, opts) {
 
   var buildTaskNames = [
     'embed-codes',
-    'copy-temp-jsx',
     'bundle-embed-bootstrap',
     'bundle-resize',
-    'bundle-components'];
+    'bundle-main'];
 
   if (opts.pretasks) {
     buildTaskNames = opts.pretasks.concat(buildTaskNames);
