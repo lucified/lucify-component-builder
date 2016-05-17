@@ -7,7 +7,7 @@ TODO: this is work-in-progress
 
 ### General options
 
-- `entryPoint`: Absolute path to entry point for Javascript bundle. When this option is defined, the file at given path will be directly used as entry point for the main javascript bundle.
+- `entryPoint`: Absolute path to entry point for main Javascript bundle. This option is required.
 - `assetContext`: HTTP path for the entry point `ìndex.html`, including trailing slash, not including `baseUrl`. Defaults to `''`.
 - `flow`: Flow id of flow in which to send notifications
 - `maxAge`: The maxAge for HTTP cache headers for assets with rev urls
@@ -19,7 +19,6 @@ TODO: this is work-in-progress
 - `org`: GitHub organization name,
 - `embedCodes`: Set to `true` to generate `embed-codes.html` along boostrapping `index.html`
 - `embedCodesHtmlTemplate`: Absolute path to page template for `embed-codes.html` page. Defaults to (this)[https://github.com/lucified/lucify-component-builder/blob/master/src/www/embed-codes.hbs] template.
-- `reactRouter`: Set to `true` to use react-router -bootstrapping code as entry point, instead of bootstrapping as React component. Defaults to `false`. This option only applies when `entryPoint` is not defined.
 
 ### Options for bootstrapping index.html
 
@@ -39,12 +38,6 @@ TODO: this is work-in-progress
 ### Options for multi-page React-router projects
 
 - `pageDefs`: list of objects containing page metadata for all entry points. For each object, the same attributes as allowed for `pageDef` are recognized. They are optional. However, a `path` attribute is mandatory. It is the page's web path below `assetContext`.
-
-### Options for projects with multiple embeds
-
-`embedDefs`: object containing definitions of all embeds build within project. Recognizes the same attributes that are allowed for `pageDef`. They are optional. The following additional attributes are mandatory:
-- `path`: The embeds' web path below `assetContext`
-- `componentPath`: File system path to the React component bootstrapping the embed (`.jsx`).
 
 ## `LUCIFY_ENV`
 
@@ -70,9 +63,6 @@ They can be defined in multiple ways
 
 (4) Also, `ENCRYPTED_AWS_SECRET_ACCESS_KEY` is available. When this is used, `LUCIFY_ENC_PASS` should be defined, so that it can be decrypted.
 
-## Possible future changes:
-
-- Make `reactRouter` option more general, by allowing to use any custom boostrapping coder. This will allow usage of `lucify-component-builder` without React
 
 
 

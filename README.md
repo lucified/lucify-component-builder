@@ -7,32 +7,34 @@ This is a pre-release of a package belonging to the Lucify platform. It has been
 
 ## Example 1: An embeddable visualisation
 
-The most common use case for `lucify-component-builder` is to use it for building and deploying a React component as an embeddable static page. This is how for example <https://github.com/lucified/lucify-refugees> works. 
+The most common use case for `lucify-component-builder` is to use it for building and deploying an embeddable static page. The following examples
+assumes you use React, but React is not required. 
 
 Assume you have the following source files in your project:
 ```
+src/js/entry-point.jsx
 src/js/main.jsx
 src/images/image-referenced-in-js.png
 src/images/image-referenced-in-css.svg
 src/scss/styles.scss
 src/data/data.json
-index.js
 ```
 
 Let's also assume that:
-- `index.js` requires the React compoment from `src/js/main.jsx` and exports it
+- `entry-point.js` requires a React component from `src/js/main.jsx` and renders it into the dom, bootstrapping the application.
 - `main.jsx` requires `image-referenced-in-js.png`, 
 - `main.jsx` requires `styles.scss`
 - `main.jsx` requires `data.json`
 - `styles.scss` references `image-references-in-css.svg`
 
 To use `lucify-component-builder` for building the project, you will need to
-include `lucify-component-builder`, `query-string` and `gulpjs/gulp#4.0` in the project's dependencies, and add the following `gulpfile.js` in the project root:
+include `lucify-component-builder`, and `gulpjs/gulp#4.0` in the project's dependencies, and add the following `gulpfile.js` in the project root:
 
 ```
 var gulp = require('gulp');
 var opts = {
   assetContext: 'my-test-project/',
+  entryPoint: path.resolve('src/js/entry-point.jsx'),
 }
 var builder = require('lucify-component-builder');
 builder(gulp, opts);
@@ -81,7 +83,7 @@ It sets React to the `window` object to allow debugging to work in Chrome. It al
 
 ## Example 2: A standalone page
 
-Let's move on to consider a React-based standalone page, that is not intended to be embedded. For most parts, it would work identically as the previous example.
+Let's move on to consider a standalone page, that is not intended to be embedded. For most parts, it would work identically as the previous example.
 
 We would however want to make sure that we have some page metadata in place, including social sharing images. We also wish avoid getting unnecessary `iFrameResizer` code into `index.html`.
 
@@ -102,6 +104,7 @@ var opts = {
   iFrameResize: false,
   embedCodes: false,
   assetContext: 'my-test-project/',
+  entryPoint: path.resolve('src/js/entry-point.jsx'),
 }
 var builder = require('lucify-component-builder');
 builder(gulp, opts);
@@ -125,41 +128,7 @@ Now `embed.js`, `resize.js` and `embed-codes.html` are missing. The images menti
 
 This type of configuration is used in the internal `lucify-refugees-article`. 
 
-## Example 3: Multi-embed project
-
-What if we wish to multiple components in one project of which we wish to build embeds? In this case we use the `embedDefs` option to pass an array of embed definitions. Each embed definition contains the file system path to the React component and a target URL path, relative to `assetContext`. Appropriate `gulpfile.js` is below:
-
-```
-var gulp = require('gulp');
-var opts = {
-  embedDefs: [{
-    componentPath: 'src/js/components/hello-world.jsx',
-    path: '/hello-world'
-  },
-  {
-    componentPath: 'src/js/components/hello-world-two.jsx',
-    path: '/subpath/hello-world-two'
-  }]
-  assetContext: 'my-test-project/',
-}
-var builder = require('lucify-component-builder');
-builder(gulp, opts);
-```
-
-This will create something similar to below in `dist`:
-
-```
-project-name-master-a3d8f0/hello-world/index.html
-project-name-master-a3d8f0/hello-world/bundle-das8a9.js
-project-name-master-a3d8f0/subpath/hello-world-two/index.html
-project-name-master-a3d8f0/subpath/hello-world-two/bundle-das8a9.js
-project-name-master-a3d8f0/embed.js
-project-name-master-a3d8f0/resize.js
-```
-
-This type of configuration is used for building some of the embeds associated with the Finnish articles.
-
-## Example 4: Multi-page `react-router` project
+## Example 3: Multi-page `react-router` project
 
 In this case we are building a whole React-router-based website, with each page having their own page metadata, etc. 
 
@@ -194,7 +163,7 @@ var opts = {
   pageDefs: defs,
   embedCodes: false,
   iframeResize: false,
-  reactRouter: true
+  entryPoint: path.resolve('src/js/entry-point.jsx')
 }
 
 var builder = require('../../index.js'); // lucify-component-builder
