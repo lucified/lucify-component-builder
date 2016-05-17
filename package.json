@@ -52,7 +52,7 @@
     "less-loader": "^2.2.2",
     "libsodium-wrappers": "^0.2.12",
     "lodash": "^4.4.0",
-    "lucify-embed-code": "~0.1.1",
+    "lucify-embed-code": "~0.1.2",
     "merge-stream": "^1.0.0",
     "minimist": "^1.2.0",
     "mkpath": "^1.0.0",
