@@ -59,7 +59,11 @@ function getConfig(
     config.output.filename = 'index-[hash].js';
   }
 
-  if (process.env.NODE_ENV === envs.STAGING || process.env.NODE_ENV === envs.PRODUCTION) {
+  if(process.env.LUCIFY_ENV === envs.PRODUCTION || process.env.LUCIFY_ENV === envs.STAGING) {
+    process.env.NODE_ENV = process.env.LUCIFY_ENV;
+  }
+  const NODE_ENV = process.env.NODE_ENV;
+  if(NODE_ENV === envs.STAGING || NODE_ENV === envs.PRODUCTION) {
     config.plugins = config.plugins.concat([
       new webpack.optimize.UglifyJsPlugin(),
       new webpack.optimize.DedupePlugin(),
