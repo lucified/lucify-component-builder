@@ -20,7 +20,8 @@
   "dependencies": {
     "babelify": "^6.4.0",
     "gulp": "gulpjs/gulp#4.0",
-    "react": "0.13.3"
+    "react": "~15.0.1",
+    "react-dom": "~15.0.1"
   },
   "browserify": {
     "transform": [

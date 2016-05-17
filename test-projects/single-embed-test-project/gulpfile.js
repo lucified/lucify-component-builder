@@ -1,9 +1,10 @@
 
 var gulp = require('gulp');
+var path = require('path');
 
 var opts = {
-  publishFromFolder: 'dist',
   assetContext: 'embed/hello-world/',
+  entryPoint: path.resolve('src/js/entry-point.jsx'),
 }
 
 var builder = require('../../index.js'); // lucify-component-builder
