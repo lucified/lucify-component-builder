@@ -14,12 +14,6 @@ function embedCodes(context, opts, baseUrl, assetContext, cb) {
   if (!opts.embedCodes) {
     return cb();
   }
-
-  if (Array.isArray(opts.embedDefs)) {
-    return mergeStream(opts.embedDefs.map(function(def) {
-      return embedCodesPage(context, baseUrl, assetContext, def.path, opts.embedCodesHtmlTemplate, cb);
-    }));
-  }
   return embedCodesPage(context, baseUrl, assetContext, '', opts.embedCodesHtmlTemplate, cb);
 }
 
