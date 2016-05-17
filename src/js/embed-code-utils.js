@@ -3,7 +3,8 @@ var gulp = require('gulp');
 var through2 = require('through2');
 var $ = require('gulp-load-plugins')();
 var mergeStream = require('merge-stream');
-var embedCode = require('lucify-commons/src/js/embed-code.js');
+var embedCode = require('lucify-embed-code');
+
 
 var src  = gulp.src;
 var dest = gulp.dest;
