@@ -35,6 +35,7 @@ var gulp = require('gulp');
 var opts = {
   assetContext: 'my-test-project/',
   entryPoint: path.resolve('src/js/entry-point.jsx'),
+  embedSupport: true
 }
 var builder = require('lucify-component-builder');
 builder(gulp, opts);
@@ -100,8 +101,8 @@ var opts = {
     twitterImage: 'twitter-card.png',
     openGraphImage: 'open-graph-size.png',
     schemaImage: 'open-graph-size.png',
+    iFrameResize: false,
   }),
-  iFrameResize: false,
   embedCodes: false,
   assetContext: 'my-test-project/',
   entryPoint: path.resolve('src/js/entry-point.jsx'),

@@ -9,6 +9,7 @@ TODO: this is work-in-progress
 
 - `entryPoint`: Absolute path to entry point for main Javascript bundle. This option is required.
 - `assetContext`: HTTP path for the entry point `ìndex.html`, including trailing slash, not including `baseUrl`. Defaults to `''`.
+- `embedSupport`: Set to true to generate embeds codes page and also include scripts that support embedding to the distribution.
 - `flow`: Flow id of flow in which to send notifications
 - `maxAge`: The maxAge for HTTP cache headers for assets with rev urls
 - `bucket`: The s3 bucket in which to deploy
