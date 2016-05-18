@@ -1,5 +1,6 @@
 
 var gulp = require('gulp');
+var path = require('path');
 
 var defs = [
   {
@@ -26,7 +27,7 @@ var opts = {
   assetContext: 'test-path/',
   pageDefs: defs,
   embedCodes: false,
-  iframeResize: false
+  entryPoint: path.resolve('src/js/entry-point.jsx'),
 }
 
 

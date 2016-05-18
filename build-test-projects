@@ -5,6 +5,7 @@ export LUCIFY_ENV=development
 
 for i in $( ls ); do
     cd $i
+    rm -rf node_modules/react*
     npm install
     if [ $? != 0 ]; then
       echo "'npm install' failed for ${i}"

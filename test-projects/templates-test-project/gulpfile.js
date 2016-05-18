@@ -8,7 +8,8 @@ var opts = {
   },
   embedCodesHtmlTemplate: path.resolve('src/www/embed-codes-template.hbs'),
   entryPoint: path.resolve('src/js/components/entry-point.jsx'),
-  assetContext: 'hello-world/'
+  assetContext: 'hello-world/',
+  embedSupport: true
 };
 
 var builder = require('../../index.js'); // lucify-component-builder

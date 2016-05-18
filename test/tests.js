@@ -168,19 +168,6 @@ describe('build test projects', () => {
     done();
   });
 
-  it('creates basic assets for multi-embed-test-project', done => {
-    'test-projects/multi-embed-test-project/dist/embed/hello-world/index.html'.should.be.a.file().and.not.empty;
-    'test-projects/multi-embed-test-project/dist/embed/hello-world/lucify-metadata.json'.should.be.a.file().with.json;
-    'test-projects/multi-embed-test-project/dist/embed/hello-world/embed-codes.html'.should.be.a.file().and.not.empty;
-    'test-projects/multi-embed-test-project/dist/embed/subpath/hello-world-two/index.html'.should.be.a.file().and.not.empty;
-    'test-projects/multi-embed-test-project/dist/embed/subpath/hello-world-two/lucify-metadata.json'.should.be.a.file().with.json;
-    'test-projects/multi-embed-test-project/dist/embed/subpath/hello-world-two/embed-codes.html'.should.be.a.file().and.not.empty;
-    'test-projects/multi-embed-test-project/dist/embed/embed.js'.should.be.a.file().and.not.empty;
-    'test-projects/multi-embed-test-project/dist/embed/resize.js'.should.be.a.file().and.not.empty;
-    'test-projects/multi-embed-test-project/dist/embed/index.html'.should.not.be.a.path();
-    done();
-  });
-
   it('creates basic assets for multi-page-test-project', done => {
     'test-projects/multi-page-test-project/dist/test-path/index.html'.should.be.a.file().and.not.empty;
     'test-projects/multi-page-test-project/dist/test-path/lucify-metadata.json'.should.be.a.file().with.json;
