@@ -13,7 +13,7 @@ const Promise = require('bluebird');
 const s3 = require('./s3.js');
 const ENVS = require('./envs.js');
 const bundleWebpack = require('./bundle-webpack.js');
-const embedCodeUtils = require('./embed-code-utils.js');
+const embedSupport = require('./embed-support.js');
 const pageDefUtils = require('./page-def-utils.js');
 const githubDeploy = require('./github-deploy.js');
 const notify = require('./flowdock-notify');
@@ -56,9 +56,9 @@ function generateMetaData(path) {
   const data = {
     stampUpdated: Math.floor(new Date().getTime() / 1000)
   };
+  mkpath.sync(path);
   fs.writeFileSync(j(path, 'lucify-metadata.json'), JSON.stringify(data));
 }
-
 
 
 //
@@ -88,27 +88,6 @@ function bundleMainComponent(opts, context, assetContext, callback) {
     callback);
 }
 
-
-function bundleEmbedBootstrap(context, assetContext, callback) {
-  var entryPoint = require.resolve('./entry-points/embed.jsx');
-  var outputFileName = 'embed.js';
-  var destPath = context.destPath;
-  var pageDefs = null;
-  var watch = false;
-  return bundleWebpack.bundle(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, null, callback);
-}
-
-/*
- * Bundle code for resizing embedded iFrame
- */
-function bundleResize(context, assetContext, callback) {
-  var entryPoint = require.resolve('./entry-points/resize.jsx');
-  var outputFileName = 'resize.js';
-  var destPath = context.destPath;
-  var pageDefs = null;
-  var watch = false;
-  return bundleWebpack.bundle(entryPoint, outputFileName, destPath, pageDefs, watch, assetContext, null, callback);
-}
 
 /*
  * Prepare standard skeleton for some data-assets
@@ -156,6 +135,11 @@ function writeBuildArtifact(url, fileName, cb) {
 }
 
 
+function embedSupportTask(context, templatePath, embedUrl, embedBaseUrl, callback) {
+  embedSupport(context.destPath, templatePath, embedUrl, embedBaseUrl);
+  callback();
+}
+
 
 //
 // Setting up of tasks for CLI
@@ -185,10 +169,12 @@ var prepareBuildTasks = function(gulp, opts) {
   context.assetPath = !deployOpt.assetContext ? '' : deployOpt.assetContext;
 
   gulp.task('prepare-skeleton', prepareSkeleton);
-  gulp.task('bundle-main', bundleMainComponent.bind(null, opts, context, deployOpt.assetContext));
-  gulp.task('bundle-embed-bootstrap', bundleEmbedBootstrap.bind(null, context, deployOpt.assetContext));
-  gulp.task('bundle-resize', bundleResize.bind(null, context, opts.assetContext));
-  gulp.task('embed-codes', embedCodeUtils.embedCodes.bind(null, context, opts, deployOpt.baseUrl, deployOpt.assetContext));
+  gulp.task('webpack', bundleMainComponent.bind(null, opts, context, deployOpt.assetContext));
+  gulp.task('embed-support', embedSupportTask.bind(null,
+      context,
+      opts.embedCodesHtmlTemplate,
+      deployOpt.baseUrl + deployOpt.assetContext,
+      deployOpt.baseUrl + deployOpt.assetContext));
   gulp.task('setup-dist-build', setupDistBuild);
   gulp.task('notify', notify.bind(null, deployOpt.project,
       deployOpt.org,
@@ -209,16 +195,18 @@ var prepareBuildTasks = function(gulp, opts) {
     )
   );
 
-  var buildTaskNames = [
-    'embed-codes',
-    'bundle-embed-bootstrap',
-    'bundle-resize',
-    'bundle-main'];
+  var buildTaskNames = [];
 
-  if (opts.pretasks) {
-    buildTaskNames = opts.pretasks.concat(buildTaskNames);
+  buildTaskNames.push('prepare-skeleton');
+  if (opts.embedSupport) {
+    buildTaskNames.push('embed-support');
   }
-  buildTaskNames = ['prepare-skeleton'].concat(buildTaskNames);
+  buildTaskNames.push('webpack');
+  if (opts.pretasks) {
+    opts.pretasks.forEach(item => {
+      buildTaskNames.push(item);
+    });
+  }
 
   gulp.task('build', gulp.series(buildTaskNames));
   gulp.task('dist', gulp.series('setup-dist-build', 'build'));
