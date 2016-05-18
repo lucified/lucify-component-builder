@@ -21,7 +21,7 @@ src/data/data.json
 ```
 
 Let's also assume that:
-- `entry-point.js` requires a React component from `src/js/main.jsx` and renders it into the dom, bootstrapping the application.
+- `entry-point.jsx` requires a React component from `src/js/main.jsx` and renders it into the dom, bootstrapping the application.
 - `main.jsx` requires `image-referenced-in-js.png`, 
 - `main.jsx` requires `styles.scss`
 - `main.jsx` requires `data.json`
