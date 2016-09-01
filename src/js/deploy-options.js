@@ -8,22 +8,22 @@ const ENVS = require('./envs.js');
 
 var deployOptions = {};
 deployOptions[ENVS.PRODUCTION] = {
-  bucket: 'lucify-prod',
+  bucket: 'lucify-website-production',
   baseUrl: 'http://www.lucify.com/',
   maxAge: 3600,
   simulateDeployment: false,
   forceDeployment: false
 };
 deployOptions[ENVS.STAGING] = {
-  bucket: 'lucify-staging',
+  bucket: 'lucify-staging-new',
   baseUrl: 'http://staging.lucify.com/',
   maxAge: 0,
   simulateDeployment: false,
   forceDeployment: false
 };
 deployOptions[ENVS.DEVELOPMENT] = {
-  bucket: 'lucify-dev',
-  baseUrl: 'http://dev.lucify.com/',
+  bucket: 'lucify-protected',
+  baseUrl: 'http://protected.lucify.com/',
   maxAge: 0,
   simulateDeployment: false,
   forceDeployment: false
