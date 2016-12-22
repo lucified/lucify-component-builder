@@ -1,6 +1,6 @@
 {
   "name": "lucify-component-builder",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Utility for building and publishing convenient distributions of React components",
   "main": "index.js",
   "engines": {
