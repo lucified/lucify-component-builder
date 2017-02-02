@@ -11,7 +11,8 @@ var entryPoints = [
   '**/*.html',
   '**/resize.js',
   '**/embed.js',
-  '*.{png,ico}'
+  '*.{png,ico}',
+  '**/lucify-metadata.json',
 ];
 
 /*

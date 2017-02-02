@@ -9,7 +9,7 @@ const ENVS = require('./envs.js');
 var deployOptions = {};
 deployOptions[ENVS.PRODUCTION] = {
   bucket: 'lucify-website-production',
-  baseUrl: 'http://www.lucify.com/',
+  baseUrl: 'https://www.lucify.com/',
   maxAge: 3600,
   simulateDeployment: false,
   forceDeployment: false
@@ -23,7 +23,7 @@ deployOptions[ENVS.STAGING] = {
 };
 deployOptions[ENVS.DEVELOPMENT] = {
   bucket: 'lucify-protected',
-  baseUrl: 'http://protected.lucify.com/',
+  baseUrl: 'https://protected.lucify.com/',
   maxAge: 0,
   simulateDeployment: false,
   forceDeployment: false
