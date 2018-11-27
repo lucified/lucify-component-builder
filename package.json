@@ -75,7 +75,7 @@
     "aws-sdk": "^2.3.3",
     "chai": "^1.10.0",
     "chai-fs": "^0.1.0",
-    "event-stream": "^3.3.2",
+    "event-stream": "3.3.4",
     "gulp-debug": "^2.1.2",
     "mocha": "^2.4.5"
   }
