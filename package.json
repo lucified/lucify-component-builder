@@ -63,7 +63,7 @@
     "project-name": "^0.2.4",
     "replaceall": "^0.1.6",
     "request": "^2.69.0",
-    "sass-loader": "^3.2.0",
+    "sass-loader": "^4.0.0",
     "style-loader": "^0.13.0",
     "through2": "^2.0.1",
     "url-loader": "^0.5.7",
