@@ -35,7 +35,7 @@
     "deepcopy": "^0.6.1",
     "del": "^2.0.2",
     "extract-text-webpack-plugin": "^1.0.1",
-    "file-loader": "^0.8.5",
+    "file-loader": "^0.9.0",
     "getport": "^0.1.0",
     "git-rev-sync": "^1.4.0",
     "gulp": "gulpjs/gulp#4.0",
